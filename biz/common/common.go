@@ -1,6 +1,9 @@
 package common
 
+const ISSUER = "LUTASAM"
 const JWTSECRETSALT = "LUTASAM"
+const PASSWORDSALT = "astaxie12798akljzmknm.ahkjkljl;k"
+const EXPIRETIME = 86400000
 
 const (
 	STATUSOKCODE    = 200

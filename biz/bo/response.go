@@ -6,15 +6,12 @@ type BaseResponse struct {
 	Data interface{} `json:"data"`
 }
 
-type PingResponse struct {
-	Pong string `json:"pong"`
-}
-
-type HelloResponse struct {
-	Hello string `json:"hello"`
-}
-
 type LoginResponse struct {
-	Username string `json:"username"`
-	Token    string `json:"token"`
+	Account string `json:"account"`
+	Token   string `json:"token"`
+}
+
+type RegisterResponse struct {
+	Account string `json:"account"`
+	Token   string `json:"token"`
 }

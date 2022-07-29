@@ -15,6 +15,10 @@ func (e Error) Code() int {
 }
 
 var (
+	UNKNOWNERROR = Error{
+		ErrorCode:   -1,
+		ErrorString: "unknown error. maybe server is error. please wait for sometime",
+	}
 	USERINPUTERROR = Error{
 		ErrorCode:   10001,
 		ErrorString: "please check your input, there is something wrong",
@@ -27,12 +31,20 @@ var (
 		ErrorCode:   10003,
 		ErrorString: "server's database has some error, please try again later",
 	}
-	USERNAMEDOESNOTEXIST = Error{
+	USERDOESNOTEXIST = Error{
 		ErrorCode:   10004,
-		ErrorString: "username does not exist. please check",
+		ErrorString: "user does not exist. please check",
 	}
 	PASSWORDISERROR = Error{
 		ErrorCode:   10005,
 		ErrorString: "password is incorrect. please try again",
+	}
+	USERNOTLOGIN = Error{
+		ErrorCode:   10006,
+		ErrorString: "you do not login. please login",
+	}
+	EXCEEDTIMELIMIT = Error{
+		ErrorCode:   10007,
+		ErrorString: "your token has no time. please login again",
 	}
 )

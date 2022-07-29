@@ -12,12 +12,11 @@ import (
 
 type LoginController struct{}
 
-func RegisterLoginRouter(r *gin.Engine) {
-	loginController := &DemoController{}
-	login := r.Group("/login")
+func RegisterLoginRouter(r *gin.RouterGroup) {
+	loginController := &LoginController{}
 	{
-		login.GET("/do_login", loginController.Ping)
-		login.POST("/do_register", loginController.Hello)
+		r.POST("/do_login", loginController.DoLogin)
+		r.POST("/do_register", loginController.DoResigter)
 	}
 }
 
@@ -26,46 +25,24 @@ func (ins *LoginController) DoLogin(c *gin.Context) {
 	var resp *bo.LoginResponse
 	err := c.ShouldBind(req)
 	if err != nil {
-		utils.Response(c, common.USERINPUTERROR.Code(), common.USERINPUTERROR.Error(), nil)
+		utils.ResponseError(c, common.USERINPUTERROR)
 		return
 	}
 	resp, err = service.GetLoginService().DoLogin(c, req)
 	if err != nil {
-		if errors.Is(err, common.USERNAMEDOESNOTEXIST) {
-			utils.Response(c, common.USERNAMEDOESNOTEXIST.Code(), common.USERNAMEDOESNOTEXIST.Error(), nil)
+		if errors.Is(err, common.USERDOESNOTEXIST) {
+			utils.ResponseError(c, common.USERDOESNOTEXIST)
 			return
 		} else if errors.Is(err, common.PASSWORDISERROR) {
-			utils.Response(c, common.PASSWORDISERROR.Code(), common.PASSWORDISERROR.Error(), nil)
+			utils.ResponseError(c, common.PASSWORDISERROR)
 			return
+		} else {
+			utils.ResponseError(c, common.UNKNOWNERROR)
 		}
 	}
-	utils.Response(c, common.STATUSOKCODE, common.STATUSOKMSG, resp)
+	utils.ResponseSuccess(c, resp)
 }
 
 func (ins *LoginController) DoResigter(c *gin.Context) {
 
-}
-
-func (ins *LoginController) Ping(c *gin.Context) {
-	pong, err := service.GetDemoService().Ping(c)
-	if err != nil {
-		utils.Response(c, 400, "server error", nil)
-		return
-	}
-	utils.Response(c, 200, "OK", pong)
-}
-
-func (ins *LoginController) Hello(c *gin.Context) {
-	req := &bo.HelloRequest{}
-	err := c.ShouldBind(req)
-	if err != nil {
-		utils.Response(c, 400, "server error", nil)
-		return
-	}
-	hello, err := service.GetDemoService().Hello(c, req)
-	if err != nil {
-		utils.Response(c, 400, "server error", nil)
-		return
-	}
-	utils.Response(c, 200, "OK", hello)
 }

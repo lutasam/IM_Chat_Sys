@@ -1,10 +1,18 @@
 package bo
 
-type HelloRequest struct {
-	Username string `json:"username"`
+type LoginRequest struct {
+	Account  string `json:"account" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	IP       string `json:"ip" binding:"required"`
+	Port     int    `json:"port" binding:"required"`
 }
 
-type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+type RegisterRequest struct {
+	Account  string `json:"account" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	NickName string `json:"nickname" binding:"required"`
+	Avatar   string `json:"avatar" binding:"-"`
+	Sign     string `json:"sign" binding:"-"`
+	IP       string `json:"ip" binding:"required"`
+	Port     int    `json:"port" binding:"required"`
 }

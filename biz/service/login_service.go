@@ -1,6 +1,8 @@
 package service
 
 import (
+	"github.com/lutasam/chat/biz/dal"
+	"github.com/lutasam/chat/biz/utils"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -23,9 +25,20 @@ func GetLoginService() *LoginService {
 }
 
 func (ins *LoginService) DoLogin(c *gin.Context, req *bo.LoginRequest) (*bo.LoginResponse, error) {
-	if req.Username == "" || req.Password == "" {
+	if req.Account == "" || req.Password == "" {
 		return nil, common.USERINPUTERROR
 	}
-	
-	return nil, nil
+	user, err := dal.GetUserDal().GetUserByAccount(c, req.Account)
+	if err != nil {
+		return nil, err
+	}
+	var token string
+	token, err = utils.GenerateJWTInUser(user)
+	if err != nil {
+		return nil, err
+	}
+	return &bo.LoginResponse{
+		Account: user.Account,
+		Token:   token,
+	}, nil
 }

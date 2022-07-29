@@ -3,13 +3,15 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/lutasam/chat/biz/handler"
+	"github.com/lutasam/chat/biz/middleware"
+	"github.com/lutasam/chat/biz/utils"
 	"io"
 	"os"
 )
 
 func InitRouterAndMiddleware(r *gin.Engine) {
 	// 设置log文件输出
-	logFile, err := os.Create("log/log.log")
+	logFile, err := os.Create(utils.GetConfigString("filepath"))
 	if err != nil {
 		panic(err)
 	}
@@ -20,6 +22,11 @@ func InitRouterAndMiddleware(r *gin.Engine) {
 	r.Use(gin.Recovery())
 
 	// 注册分组路由
-	// /demo
-	handler.RegisterDemoRouter(r)
+	// 登录、注册模块
+	login := r.Group("/login")
+	handler.RegisterLoginRouter(login)
+
+	// 好友模块
+	friend := r.Group("/friend")
+	friend.Use(middleware.JWTAuth())
 }
