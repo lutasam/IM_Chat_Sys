@@ -26,6 +26,6 @@ func (ins *LoginService) DoLogin(c *gin.Context, req *bo.LoginRequest) (*bo.Logi
 	if req.Username == "" || req.Password == "" {
 		return nil, common.USERINPUTERROR
 	}
-
+	
 	return nil, nil
 }

@@ -23,12 +23,13 @@ func RegisterLoginRouter(r *gin.Engine) {
 
 func (ins *LoginController) DoLogin(c *gin.Context) {
 	req := &bo.LoginRequest{}
+	var resp *bo.LoginResponse
 	err := c.ShouldBind(req)
 	if err != nil {
 		utils.Response(c, common.USERINPUTERROR.Code(), common.USERINPUTERROR.Error(), nil)
 		return
 	}
-	resp, err := service.GetLoginService().DoLogin(c, req)
+	resp, err = service.GetLoginService().DoLogin(c, req)
 	if err != nil {
 		if errors.Is(err, common.USERNAMEDOESNOTEXIST) {
 			utils.Response(c, common.USERNAMEDOESNOTEXIST.Code(), common.USERNAMEDOESNOTEXIST.Error(), nil)
