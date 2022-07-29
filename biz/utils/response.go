@@ -2,7 +2,7 @@ package utils
 
 import (
 	"github.com/gin-gonic/gin"
-	"lutasam/GIN_LUTA/biz/bo"
+	"github.com/lutasam/chat/biz/bo"
 )
 
 func Response(c *gin.Context, code int, msg string, data interface{}) {

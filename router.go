@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/lutasam/chat/biz/handler"
 	"io"
-	"lutasam/GIN_LUTA/biz/handler"
 	"os"
 )
 

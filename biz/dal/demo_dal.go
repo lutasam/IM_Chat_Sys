@@ -2,7 +2,7 @@ package dal
 
 import (
 	"github.com/gin-gonic/gin"
-	"lutasam/GIN_LUTA/biz/model"
+	"github.com/lutasam/chat/biz/model"
 	"sync"
 )
 

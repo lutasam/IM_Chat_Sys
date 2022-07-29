@@ -1,4 +1,4 @@
-module lutasam/GIN_LUTA
+module github.com/lutasam/chat
 
 go 1.16
 
