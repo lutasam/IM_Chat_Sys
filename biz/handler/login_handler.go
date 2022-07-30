@@ -16,7 +16,7 @@ func RegisterLoginRouter(r *gin.RouterGroup) {
 	loginController := &LoginController{}
 	{
 		r.POST("/do_login", loginController.DoLogin)
-		r.POST("/do_register", loginController.DoResigter)
+		r.POST("/do_register", loginController.DoRegister)
 	}
 }
 
@@ -38,11 +38,24 @@ func (ins *LoginController) DoLogin(c *gin.Context) {
 			return
 		} else {
 			utils.ResponseError(c, common.UNKNOWNERROR)
+			return
 		}
 	}
 	utils.ResponseSuccess(c, resp)
 }
 
-func (ins *LoginController) DoResigter(c *gin.Context) {
-
+func (ins *LoginController) DoRegister(c *gin.Context) {
+	req := &bo.RegisterRequest{}
+	var resp *bo.RegisterResponse
+	err := c.ShouldBind(req)
+	if err != nil {
+		utils.ResponseError(c, common.USERINPUTERROR)
+		return
+	}
+	resp, err = service.GetLoginService().DoRegister(c, req)
+	if err != nil {
+		utils.ResponseError(c, common.UNKNOWNERROR)
+		return
+	}
+	utils.ResponseSuccess(c, resp)
 }

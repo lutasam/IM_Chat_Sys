@@ -47,4 +47,8 @@ var (
 		ErrorCode:   10007,
 		ErrorString: "your token has no time. please login again",
 	}
+	USEREXISTED = Error{
+		ErrorCode:   10008,
+		ErrorString: "account has existed. please rename your account",
+	}
 )

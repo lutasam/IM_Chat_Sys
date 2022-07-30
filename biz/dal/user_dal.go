@@ -5,6 +5,7 @@ import (
 	"github.com/lutasam/chat/biz/common"
 	"github.com/lutasam/chat/biz/model"
 	"github.com/lutasam/chat/biz/repository"
+	"github.com/lutasam/chat/biz/utils"
 	"sync"
 )
 
@@ -22,10 +23,13 @@ func GetUserDal() *UserDal {
 	return userDal
 }
 
-var db = repository.DB
-
 func (ins *UserDal) CreateUser(c *gin.Context, user *model.User) error {
-	err := db.WithContext(c.Copy()).Table(user.TableName()).Create(user).Error
+	var err error
+	user.Password, err = utils.EncryptPassword(user.Password)
+	if err != nil {
+		return err
+	}
+	err = repository.GetDB().Table(user.TableName()).Create(user).Error
 	if err != nil {
 		return common.DATABASEERROR
 	}
@@ -34,7 +38,7 @@ func (ins *UserDal) CreateUser(c *gin.Context, user *model.User) error {
 
 func (ins *UserDal) GetUserByID(c *gin.Context, userID uint64) (*model.User, error) {
 	var user *model.User
-	err := db.WithContext(c.Copy()).Table(user.TableName()).Where("id = ?", userID).Find(user)
+	err := repository.GetDB().Table(user.TableName()).Where("id = ?", userID).Find(user).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
@@ -45,19 +49,19 @@ func (ins *UserDal) GetUserByID(c *gin.Context, userID uint64) (*model.User, err
 }
 
 func (ins *UserDal) GetUserByAccount(c *gin.Context, account string) (*model.User, error) {
-	var user *model.User
-	err := db.WithContext(c.Copy()).Table(user.TableName()).Where("account = ?", account).Find(user)
+	user := &model.User{}
+	err := repository.GetDB().Table(user.TableName()).Where("account = ?", account).Find(user).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
-	if user == nil {
+	if user.ID == 0 {
 		return nil, common.USERDOESNOTEXIST
 	}
 	return user, nil
 }
 
 func (ins *UserDal) UpdateUserByID(c *gin.Context, user *model.User) error {
-	err := db.WithContext(c.Copy()).Table(user.TableName()).Updates(user).Error
+	err := repository.GetDB().Table(user.TableName()).Updates(user).Error
 	if err != nil {
 		return common.DATABASEERROR
 	}

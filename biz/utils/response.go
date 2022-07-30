@@ -12,7 +12,7 @@ func Response(c *gin.Context, code int, msg string, data interface{}) {
 		Msg:  msg,
 		Data: data,
 	}
-	c.JSON(code, resp)
+	c.JSON(common.SERVERERRORCODE, resp)
 }
 
 func ResponseSuccess(c *gin.Context, data interface{}) {

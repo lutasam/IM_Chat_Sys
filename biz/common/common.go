@@ -16,3 +16,17 @@ const (
 	CLIENTERRORMSG = "404 NOT FOUND"
 	SERVERERRORMSG = "500 SERVER ERROR"
 )
+
+// Status 用户状态
+type Status int
+
+const (
+	ONLINE     Status = iota + 1 // 在线
+	BUSY                         // 忙碌
+	INVISIABLE                   // 隐身
+	OFFLINE                      // 离线
+)
+
+func (s Status) Int() int {
+	return int(s)
+}

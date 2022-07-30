@@ -11,7 +11,7 @@ import (
 
 func InitRouterAndMiddleware(r *gin.Engine) {
 	// 设置log文件输出
-	logFile, err := os.Create(utils.GetConfigString("filepath"))
+	logFile, err := os.Create(utils.GetConfigResolve().GetConfigString("log.filepath"))
 	if err != nil {
 		panic(err)
 	}
