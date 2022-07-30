@@ -1,0 +1,1 @@
+[GIN] 2022/07/31 - 00:04:04 | 500 |    233.0365ms |             ::1 | POST     "/user/update_user_info"

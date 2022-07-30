@@ -3,9 +3,7 @@ package service
 import (
 	"github.com/lutasam/chat/biz/dal"
 	"github.com/lutasam/chat/biz/model"
-	"github.com/lutasam/chat/biz/repository"
 	"github.com/lutasam/chat/biz/utils"
-	"gorm.io/gorm"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -28,8 +26,8 @@ func GetLoginService() *LoginService {
 }
 
 func (ins *LoginService) DoLogin(c *gin.Context, req *bo.LoginRequest) (*bo.LoginResponse, error) {
-	if req.Account == "" || req.Password == "" || utils.IsValidIP(req.IP) ||
-		utils.IsValidPort(req.Port) {
+	if req.Account == "" || req.Password == "" || !utils.IsValidIP(req.IP) ||
+		!utils.IsValidPort(req.Port) {
 		return nil, common.USERINPUTERROR
 	}
 	user, err := dal.GetUserDal().GetUserByAccount(c, req.Account)
@@ -54,7 +52,7 @@ func (ins *LoginService) DoLogin(c *gin.Context, req *bo.LoginRequest) (*bo.Logi
 
 func (ins *LoginService) DoRegister(c *gin.Context, req *bo.RegisterRequest) (*bo.RegisterResponse, error) {
 	if req.Account == "" || req.Password == "" || req.IP == "" ||
-		utils.IsValidPort(req.Port) || req.NickName == "" ||
+		!utils.IsValidPort(req.Port) || req.NickName == "" ||
 		!utils.IsValidIP(req.IP) || !utils.IsValidURL(req.Avatar) {
 		return nil, common.USERINPUTERROR
 	}
@@ -62,38 +60,17 @@ func (ins *LoginService) DoRegister(c *gin.Context, req *bo.RegisterRequest) (*b
 	if err != nil {
 		return nil, err
 	}
-	if user != nil {
+	if user.ID != 0 {
 		return nil, common.USEREXISTED
 	}
 
 	user = generateNewUser(req)
 	var token string
-	err = repository.GetDB().Transaction(func(tx *gorm.DB) error {
-		errors := make(chan error, 1)
-		wg := sync.WaitGroup{}
-		wg.Add(2)
-		go func() {
-			err := dal.GetUserDal().CreateUser(c, user)
-			if err != nil {
-				errors <- err
-			}
-			wg.Done()
-		}()
-		go func() {
-			var err error
-			token, err = utils.GenerateJWTInUser(user)
-			if err != nil {
-				errors <- err
-			}
-			wg.Done()
-		}()
-		wg.Wait()
-		err, exist := <-errors
-		if exist {
-			return err
-		}
-		return nil
-	})
+	err = dal.GetUserDal().CreateUser(c, user)
+	if err != nil {
+		return nil, err
+	}
+	token, err = utils.GenerateJWTInUser(user)
 	if err != nil {
 		return nil, err
 	}

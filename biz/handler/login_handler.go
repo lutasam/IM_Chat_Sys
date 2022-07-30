@@ -36,6 +36,9 @@ func (ins *LoginController) DoLogin(c *gin.Context) {
 		} else if errors.Is(err, common.PASSWORDISERROR) {
 			utils.ResponseError(c, common.PASSWORDISERROR)
 			return
+		} else if errors.Is(err, common.USERINPUTERROR) {
+			utils.ResponseError(c, common.USERINPUTERROR)
+			return
 		} else {
 			utils.ResponseError(c, common.UNKNOWNERROR)
 			return
@@ -54,8 +57,16 @@ func (ins *LoginController) DoRegister(c *gin.Context) {
 	}
 	resp, err = service.GetLoginService().DoRegister(c, req)
 	if err != nil {
-		utils.ResponseError(c, common.UNKNOWNERROR)
-		return
+		if errors.Is(err, common.USEREXISTED) {
+			utils.ResponseError(c, common.USEREXISTED)
+			return
+		} else if errors.Is(err, common.USERINPUTERROR) {
+			utils.ResponseError(c, common.USERINPUTERROR)
+			return
+		} else {
+			utils.ResponseError(c, common.UNKNOWNERROR)
+			return
+		}
 	}
 	utils.ResponseSuccess(c, resp)
 }

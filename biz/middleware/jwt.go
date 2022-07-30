@@ -21,7 +21,7 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 		if strings.HasPrefix(token, "Bearer") {
-			token = strings.Split(token, "")[1]
+			token = strings.Split(token, " ")[1]
 		}
 		jwtStruct, err := utils.ParseJWTToken(token)
 		if err != nil {

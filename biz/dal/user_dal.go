@@ -54,9 +54,6 @@ func (ins *UserDal) GetUserByAccount(c *gin.Context, account string) (*model.Use
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
-	if user.ID == 0 {
-		return nil, common.USERDOESNOTEXIST
-	}
 	return user, nil
 }
 

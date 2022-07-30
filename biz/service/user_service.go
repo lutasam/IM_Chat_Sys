@@ -42,13 +42,20 @@ func (ins *UserService) GetUserDetail(c *gin.Context, userID uint64) (*bo.GetUse
 }
 
 func (ins *UserService) UpdateUserInfo(c *gin.Context, req *bo.UpdateUserInfoRequest) error {
+	if req.Avatar != "" && !utils.IsValidURL(req.Avatar) {
+		return common.USERINPUTERROR
+	}
 	jwtStruct, exist := c.Get("jwtStruct")
 	if !exist {
 		return common.USERNOTLOGIN
 	}
-	err := dal.GetUserDal().UpdateUser(c, &model.User{
-		ID:       jwtStruct.(utils.JWTStruct).UserID,
-		Password: req.Password,
+	code, err := utils.EncryptPassword(req.Password)
+	if err != nil {
+		return err
+	}
+	err = dal.GetUserDal().UpdateUser(c, &model.User{
+		ID:       jwtStruct.(*utils.JWTStruct).UserID,
+		Password: code,
 		NickName: req.NickName,
 		Avatar:   req.Avatar,
 		Sign:     req.Sign,

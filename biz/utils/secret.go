@@ -6,6 +6,9 @@ import (
 )
 
 func EncryptPassword(s string) (string, error) {
+	if s == "" {
+		return "", nil
+	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(s), bcrypt.MinCost)
 	if err != nil {
 		return "", nil
