@@ -29,4 +29,13 @@ func InitRouterAndMiddleware(r *gin.Engine) {
 	// 好友模块
 	friend := r.Group("/friend")
 	friend.Use(middleware.JWTAuth())
+
+	// 对话模块
+	message := r.Group("/message")
+	message.Use(middleware.JWTAuth())
+
+	// 用户模块
+	user := r.Group("/user")
+	user.Use(middleware.JWTAuth())
+	handler.RegisterUserRouter(user)
 }

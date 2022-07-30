@@ -29,7 +29,7 @@ func GetLoginService() *LoginService {
 
 func (ins *LoginService) DoLogin(c *gin.Context, req *bo.LoginRequest) (*bo.LoginResponse, error) {
 	if req.Account == "" || req.Password == "" || utils.IsValidIP(req.IP) ||
-		req.Port <= 0 || req.Port >= 65536 {
+		utils.IsValidPort(req.Port) {
 		return nil, common.USERINPUTERROR
 	}
 	user, err := dal.GetUserDal().GetUserByAccount(c, req.Account)
@@ -45,6 +45,7 @@ func (ins *LoginService) DoLogin(c *gin.Context, req *bo.LoginRequest) (*bo.Logi
 	if err != nil {
 		return nil, err
 	}
+
 	return &bo.LoginResponse{
 		Account: user.Account,
 		Token:   token,
@@ -53,7 +54,7 @@ func (ins *LoginService) DoLogin(c *gin.Context, req *bo.LoginRequest) (*bo.Logi
 
 func (ins *LoginService) DoRegister(c *gin.Context, req *bo.RegisterRequest) (*bo.RegisterResponse, error) {
 	if req.Account == "" || req.Password == "" || req.IP == "" ||
-		req.Port <= 0 || req.Port >= 65536 || req.NickName == "" ||
+		utils.IsValidPort(req.Port) || req.NickName == "" ||
 		!utils.IsValidIP(req.IP) || !utils.IsValidURL(req.Avatar) {
 		return nil, common.USERINPUTERROR
 	}

@@ -11,3 +11,7 @@ func IsValidIP(ip string) bool {
 func IsValidURL(url string) bool {
 	return govalidator.IsURL(url)
 }
+
+func IsValidPort(port int) bool {
+	return port >= 1024 && port < 65536
+}

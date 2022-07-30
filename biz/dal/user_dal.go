@@ -37,7 +37,7 @@ func (ins *UserDal) CreateUser(c *gin.Context, user *model.User) error {
 }
 
 func (ins *UserDal) GetUserByID(c *gin.Context, userID uint64) (*model.User, error) {
-	var user *model.User
+	user := &model.User{}
 	err := repository.GetDB().Table(user.TableName()).Where("id = ?", userID).Find(user).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
@@ -60,8 +60,20 @@ func (ins *UserDal) GetUserByAccount(c *gin.Context, account string) (*model.Use
 	return user, nil
 }
 
-func (ins *UserDal) UpdateUserByID(c *gin.Context, user *model.User) error {
+func (ins *UserDal) UpdateUser(c *gin.Context, user *model.User) error {
 	err := repository.GetDB().Table(user.TableName()).Updates(user).Error
+	if err != nil {
+		return common.DATABASEERROR
+	}
+	return nil
+}
+
+func (ins *UserDal) UpdateUserLoginInfo(c *gin.Context, userID uint64, ip string, port int) error {
+	user := &model.User{
+		IP:   ip,
+		Port: port,
+	}
+	err := repository.GetDB().Table(model.User{}.TableName()).Where("id = ?", userID).Updates(user).Error
 	if err != nil {
 		return common.DATABASEERROR
 	}
