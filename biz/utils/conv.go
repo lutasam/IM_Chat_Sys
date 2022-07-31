@@ -9,3 +9,7 @@ func ParseString2Uint64(s string) (uint64, error) {
 	}
 	return i, nil
 }
+
+func ParseUint642String(i uint64) string {
+	return strconv.FormatUint(i, 10)
+}

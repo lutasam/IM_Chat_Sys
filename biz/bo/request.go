@@ -23,3 +23,13 @@ type UpdateUserInfoRequest struct {
 	Avatar   string `json:"avatar" binding:"-"`
 	Sign     string `json:"sign" binding:"-"`
 }
+
+type SendUserMessageRequest struct {
+	ReceiveUserID string `json:"receive_user_id" binding:"required"`
+	Content       string `json:"content" binging:"required"`
+}
+
+type SendGroupMessageRequest struct {
+	GroupID string `json:"group_id" binding:"required"`
+	Content string `json:"content" binging:"required"`
+}

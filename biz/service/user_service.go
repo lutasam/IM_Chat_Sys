@@ -33,6 +33,7 @@ func (ins *UserService) GetUserDetail(c *gin.Context, userID uint64) (*bo.GetUse
 		return nil, common.USERDOESNOTEXIST
 	}
 	return &bo.GetUserDetailResponse{
+		ID:       utils.ParseUint642String(user.ID),
 		Account:  user.Account,
 		NickName: user.NickName,
 		Avatar:   user.Avatar,
