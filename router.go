@@ -1,12 +1,13 @@
 package main
 
 import (
+	"io"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/lutasam/chat/biz/handler"
 	"github.com/lutasam/chat/biz/middleware"
 	"github.com/lutasam/chat/biz/utils"
-	"io"
-	"os"
 )
 
 func InitRouterAndMiddleware(r *gin.Engine) {
@@ -38,4 +39,9 @@ func InitRouterAndMiddleware(r *gin.Engine) {
 	user := r.Group("/user")
 	user.Use(middleware.JWTAuth())
 	handler.RegisterUserRouter(user)
+
+	// 组模块
+	group := r.Group("/group")
+	group.Use(middleware.JWTAuth())
+	handler.RegisterGroupRouter(group)
 }

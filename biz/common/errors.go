@@ -51,4 +51,8 @@ var (
 		ErrorCode:   10008,
 		ErrorString: "account has existed. please rename your account",
 	}
+	GROUPNOTEXIST = Error{
+		ErrorCode:   10009,
+		ErrorString: "this group dose not exist. maybe your input is error",
+	}
 )

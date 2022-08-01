@@ -12,7 +12,7 @@ func TestGetUserDal(t *testing.T) {
 
 func TestUserDal_CreateUser(t *testing.T) {
 	err := GetUserDal().CreateUser(nil, &model.User{
-		ID:       utils.GetID(),
+		ID:       utils.GenerateUserID(),
 		Account:  "lutasam",
 		Password: "123456",
 		NickName: "lutasam",

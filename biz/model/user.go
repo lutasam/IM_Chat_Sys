@@ -1,8 +1,9 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type User struct {
@@ -15,6 +16,8 @@ type User struct {
 	IP        string         `gorm:"column:ip"`
 	Port      int            `gorm:"column:port"`
 	Status    int            `gorm:"column:status"`
+	Groups    []*Group       `gorm:"many2many:users_groups"`
+	Friends   []*User        `gorm:"many2many:users_friends"`
 	CreatedAt time.Time      `gorm:"column:created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at"`

@@ -82,7 +82,7 @@ func (ins *LoginService) DoRegister(c *gin.Context, req *bo.RegisterRequest) (*b
 
 func generateNewUser(req *bo.RegisterRequest) *model.User {
 	return &model.User{
-		ID:       utils.GetID(),
+		ID:       utils.GenerateUserID(),
 		Account:  req.Account,
 		Password: req.Password,
 		NickName: req.NickName,

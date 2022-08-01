@@ -1,8 +1,10 @@
 package utils
 
 import (
-	"github.com/spf13/viper"
 	"sync"
+
+	"github.com/lutasam/chat/biz/common"
+	"github.com/spf13/viper"
 )
 
 type ConfigResolve struct {
@@ -19,7 +21,7 @@ func GetConfigResolve() *ConfigResolve {
 		Resolve = &ConfigResolve{
 			Viper: viper.New(),
 		}
-		Resolve.Viper.SetConfigFile("/root/go/src/chat/conf/config.yml")
+		Resolve.Viper.SetConfigFile(common.CONFIGFILEPATH)
 		Resolve.Viper.SetConfigType("yml")
 		err := Resolve.Viper.ReadInConfig()
 		if err != nil {
