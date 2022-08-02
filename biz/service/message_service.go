@@ -27,19 +27,13 @@ func GetMessageService() *MessageService {
 }
 
 func (ins *MessageService) GetUserMessages(c *gin.Context, sendID, receiveID uint64) (*bo.GetUserMessagesResponse, error) {
-	user, err := dal.GetUserDal().GetUserByID(c, sendID)
+	_, err := dal.GetUserDal().GetUserByID(c, sendID)
 	if err != nil {
 		return nil, err
 	}
-	if user.ID == 0 {
-		return nil, common.USERDOESNOTEXIST
-	}
-	user, err = dal.GetUserDal().GetUserByID(c, receiveID)
+	_, err = dal.GetUserDal().GetUserByID(c, receiveID)
 	if err != nil {
 		return nil, err
-	}
-	if user.ID == 0 {
-		return nil, common.USERDOESNOTEXIST
 	}
 	var messages []*model.UserMessage
 	messages, err = dal.GetMessageDal().GetUserMessages(c, sendID, receiveID)

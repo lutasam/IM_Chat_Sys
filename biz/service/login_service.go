@@ -39,7 +39,7 @@ func (ins *LoginService) DoLogin(c *gin.Context, req *bo.LoginRequest) (*bo.Logi
 		return nil, err
 	}
 	var token string
-	token, err = utils.GenerateJWTInUser(user)
+	token, err = utils.GenerateJWTByUserInfo(user)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (ins *LoginService) DoRegister(c *gin.Context, req *bo.RegisterRequest) (*b
 	if err != nil {
 		return nil, err
 	}
-	token, err = utils.GenerateJWTInUser(user)
+	token, err = utils.GenerateJWTByUserInfo(user)
 	if err != nil {
 		return nil, err
 	}
