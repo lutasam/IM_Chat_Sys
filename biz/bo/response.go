@@ -1,6 +1,10 @@
 package bo
 
-import "github.com/lutasam/chat/biz/vo"
+import (
+	"time"
+
+	"github.com/lutasam/chat/biz/vo"
+)
 
 type BaseResponse struct {
 	Code int         `json:"code"`
@@ -41,4 +45,20 @@ type GetUserMessageNumResponse struct {
 
 type GetGroupMessageNumResponse struct {
 	Count int `json:"count"`
+}
+
+type GetGroupDetailResponse struct {
+	ID        uint64      `json:"id"`
+	Name      string      `json:"name"`
+	Describe  string      `json:"describe"`
+	Avatar    string      `json:"avatar"`
+	MemberNum int         `json:"member_num"`
+	AdminUser *vo.UserVO  `json:"admin_id"`
+	Tags      []*vo.TagVO `json:"tages"`
+	CreatedAt time.Time   `json:"created_at"`
+}
+
+type GetAllGroupsResponse struct {
+	Total  int                      `json:"total"`
+	Groups []*vo.GroupWithMessageVO `json:"groups"`
 }

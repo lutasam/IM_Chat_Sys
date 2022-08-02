@@ -13,6 +13,7 @@ type Group struct {
 	Avatar    string         `gorm:"column:avatar"`
 	AdminID   uint64         `gorm:"column:admin_id"`
 	User      []*User        `gorm:"many2many:users_groups"`
+	Tages     []*Tag         `gorm:"many2many:tags"`
 	CreatedAt time.Time      `gorm:"column:created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at"`

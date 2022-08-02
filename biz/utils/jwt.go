@@ -1,10 +1,12 @@
 package utils
 
 import (
+	"time"
+
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/lutasam/chat/biz/common"
 	"github.com/lutasam/chat/biz/model"
-	"time"
 )
 
 type JWTStruct struct {
@@ -17,8 +19,8 @@ func (J JWTStruct) Valid() error {
 	return nil
 }
 
-// GenerateJWTInUser generates a JWT by username and password
-func GenerateJWTInUser(user *model.User) (string, error) {
+// GenerateJWTInUser generates a JWT token by username and user account
+func GenerateJWTByUserInfo(user *model.User) (string, error) {
 	timeNow := time.Now().Unix()
 	token := jwt.New(jwt.SigningMethodHS256)
 	token.Claims = JWTStruct{
@@ -30,7 +32,7 @@ func GenerateJWTInUser(user *model.User) (string, error) {
 			NotBefore: timeNow,
 		},
 	}
-	tokenString, err := token.SignedString([]byte(common.JWTSECRETSALT))
+	tokenString, err := token.SignedString([]byte(common.OTHERSECRETSALT))
 	if err != nil {
 		return "", err
 	}
@@ -40,10 +42,18 @@ func GenerateJWTInUser(user *model.User) (string, error) {
 // ParseJWTToken parse tokenString to JWTStruct
 func ParseJWTToken(tokenString string) (*JWTStruct, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &JWTStruct{}, func(t *jwt.Token) (interface{}, error) {
-		return []byte(common.JWTSECRETSALT), nil
+		return []byte(common.OTHERSECRETSALT), nil
 	})
 	if err != nil {
 		return nil, err
 	}
 	return token.Claims.(*JWTStruct), nil
+}
+
+func GetCtxUserInfoJWT(c *gin.Context) (*JWTStruct, error) {
+	jwtStruct, exist := c.Get("jwtStruct")
+	if !exist {
+		return nil, common.USERNOTLOGIN
+	}
+	return jwtStruct.(*JWTStruct), nil
 }

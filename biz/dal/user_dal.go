@@ -1,12 +1,13 @@
 package dal
 
 import (
+	"sync"
+
 	"github.com/gin-gonic/gin"
 	"github.com/lutasam/chat/biz/common"
 	"github.com/lutasam/chat/biz/model"
 	"github.com/lutasam/chat/biz/repository"
 	"github.com/lutasam/chat/biz/utils"
-	"sync"
 )
 
 type UserDal struct{}
@@ -42,7 +43,7 @@ func (ins *UserDal) GetUserByID(c *gin.Context, userID uint64) (*model.User, err
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
-	if user == nil {
+	if user.ID == 0 {
 		return nil, common.USERDOESNOTEXIST
 	}
 	return user, nil
@@ -53,6 +54,9 @@ func (ins *UserDal) GetUserByAccount(c *gin.Context, account string) (*model.Use
 	err := repository.GetDB().Table(user.TableName()).Where("account = ?", account).Find(user).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
+	}
+	if user.ID == 0 {
+		return nil, common.USERDOESNOTEXIST
 	}
 	return user, nil
 }
@@ -75,4 +79,16 @@ func (ins *UserDal) UpdateUserLoginInfo(c *gin.Context, userID uint64, ip string
 		return common.DATABASEERROR
 	}
 	return nil
+}
+
+func (ins *UserDal) GetUsersByIDs(c *gin.Context, ids []uint64) ([]*model.User, error) {
+	var users []*model.User
+	err := repository.GetDB().Table(model.User{}.TableName()).Where("id in ?", ids).Find(&users).Error
+	if err != nil {
+		return nil, common.DATABASEERROR
+	}
+	if len(users) != len(ids) {
+		return nil, common.USERDOESNOTEXIST
+	}
+	return users, nil
 }

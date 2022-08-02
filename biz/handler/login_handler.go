@@ -25,22 +25,22 @@ func (ins *LoginController) DoLogin(c *gin.Context) {
 	var resp *bo.LoginResponse
 	err := c.ShouldBind(req)
 	if err != nil {
-		utils.ResponseError(c, common.USERINPUTERROR)
+		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
 	resp, err = service.GetLoginService().DoLogin(c, req)
 	if err != nil {
 		if errors.Is(err, common.USERDOESNOTEXIST) {
-			utils.ResponseError(c, common.USERDOESNOTEXIST)
+			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
 			return
 		} else if errors.Is(err, common.PASSWORDISERROR) {
-			utils.ResponseError(c, common.PASSWORDISERROR)
+			utils.ResponseClientError(c, common.PASSWORDISERROR)
 			return
 		} else if errors.Is(err, common.USERINPUTERROR) {
-			utils.ResponseError(c, common.USERINPUTERROR)
+			utils.ResponseClientError(c, common.USERINPUTERROR)
 			return
 		} else {
-			utils.ResponseError(c, common.UNKNOWNERROR)
+			utils.ResponseServerError(c, common.UNKNOWNERROR)
 			return
 		}
 	}
@@ -52,19 +52,19 @@ func (ins *LoginController) DoRegister(c *gin.Context) {
 	var resp *bo.RegisterResponse
 	err := c.ShouldBind(req)
 	if err != nil {
-		utils.ResponseError(c, common.USERINPUTERROR)
+		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
 	resp, err = service.GetLoginService().DoRegister(c, req)
 	if err != nil {
 		if errors.Is(err, common.USEREXISTED) {
-			utils.ResponseError(c, common.USEREXISTED)
+			utils.ResponseClientError(c, common.USEREXISTED)
 			return
 		} else if errors.Is(err, common.USERINPUTERROR) {
-			utils.ResponseError(c, common.USERINPUTERROR)
+			utils.ResponseClientError(c, common.USERINPUTERROR)
 			return
 		} else {
-			utils.ResponseError(c, common.UNKNOWNERROR)
+			utils.ResponseServerError(c, common.UNKNOWNERROR)
 			return
 		}
 	}

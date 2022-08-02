@@ -1,10 +1,10 @@
 package common
 
-const ISSUER = "LUTASAM"
-const JWTSECRETSALT = "LUTASAM"
-const PASSWORDSALT = "astaxie12798akljzmknm.ahkjkljl;k"
-const EXPIRETIME = 86400000
-const CONFIGFILEPATH = "/root/go/src/chat/conf/config.yml"
+const ISSUER = "LUTASAM"                                   // jwt issuer
+const PASSWORDSALT = "astaxie12798akljzmknm.ahkjkljl;k"    // use only for password encryption
+const OTHERSECRETSALT = "9871267812345mn812345xyz"         // user for other encryption
+const EXPIRETIME = 86400000                                // jwt expiration time. 1 day's second
+const CONFIGFILEPATH = "/root/go/src/chat/conf/config.yml" // config file path. Must change for your system
 
 const (
 	STATUSOKCODE    = 200
@@ -18,14 +18,13 @@ const (
 	SERVERERRORMSG = "500 SERVER ERROR"
 )
 
-// Status 用户状态
-type Status int
+type Status int // Status user status
 
 const (
-	ONLINE     Status = iota + 1 // 在线
-	BUSY                         // 忙碌
-	INVISIABLE                   // 隐身
-	OFFLINE                      // 离线
+	ONLINE Status = iota + 1
+	BUSY
+	INVISIABLE
+	OFFLINE
 )
 
 func (s Status) Int() int {

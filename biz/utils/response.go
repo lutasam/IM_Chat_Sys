@@ -6,19 +6,36 @@ import (
 	"github.com/lutasam/chat/biz/common"
 )
 
-func Response(c *gin.Context, code int, msg string, data interface{}) {
+// Response DIY your Response based on bo.BaseResponse
+func Response(c *gin.Context, code, errCode int, errMsg string, data interface{}) {
 	resp := &bo.BaseResponse{
-		Code: code,
-		Msg:  msg,
+		Code: errCode,
+		Msg:  errMsg,
 		Data: data,
 	}
-	c.JSON(common.SERVERERRORCODE, resp)
+	c.JSON(code, resp)
 }
 
+// ResponseSuccess returns a 200 code.
+// If you need to return other code, use Response func.
 func ResponseSuccess(c *gin.Context, data interface{}) {
-	Response(c, common.STATUSOKCODE, common.STATUSOKMSG, data)
+	Response(c, common.STATUSOKCODE, common.STATUSOKCODE, common.STATUSOKMSG, data)
 }
 
+// ResponseClientError returns a 400 code.
+// If you need to return other code, use Response func.
+func ResponseClientError(c *gin.Context, err common.Error) {
+	Response(c, common.CLIENTERRORCODE, err.Code(), err.Error(), nil)
+}
+
+// ResponseServerError returns a 500 code
+// If you need to return other code, use Response func.
+func ResponseServerError(c *gin.Context, err common.Error) {
+	Response(c, common.SERVERERRORCODE, err.Code(), err.Error(), nil)
+}
+
+// ResponseError returns a ServerErrorResponse.
+// User ResponseServerError func and ResponseClientError func to distinguish between them.
 func ResponseError(c *gin.Context, err common.Error) {
-	Response(c, err.Code(), err.Error(), nil)
+	ResponseServerError(c, err)
 }

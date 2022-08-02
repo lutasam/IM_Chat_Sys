@@ -38,6 +38,9 @@ func (ins *MessageDal) GetUserMessages(c *gin.Context, sendID, receiveID uint64)
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
+	if len(messages) == 0 {
+		return nil, common.DATANOTFOUND
+	}
 	return messages, nil
 }
 
@@ -65,6 +68,9 @@ func (ins *MessageDal) GetGroupMessages(c *gin.Context, groupID uint64) ([]*mode
 		Where("group_id = ?", groupID).Find(&messages).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
+	}
+	if len(messages) == 0 {
+		return nil, common.DATANOTFOUND
 	}
 	return messages, nil
 }

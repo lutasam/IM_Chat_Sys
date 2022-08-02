@@ -33,3 +33,20 @@ type SendGroupMessageRequest struct {
 	GroupID string `json:"group_id" binding:"required"`
 	Content string `json:"content" binging:"required"`
 }
+
+type CreateGroupRequest struct {
+	Name     string   `json:"name" binding:"required"`
+	Describe string   `json:"describe" binding:"-"`
+	Avatar   string   `json:"avatar" binding:"-"`
+	UserIDs  []string `json:"user_ids" binding:"-"`
+	TagNames []string `json:"tag_names" binding:"-"`
+}
+
+type UpdateGroupRequest struct {
+	GroupID  string   `json:"group_id" binding:"required"`
+	Name     string   `json:"name" binding:"-"`
+	Describe string   `json:"describe" binding:"-"`
+	Avatar   string   `json:"avatar" binding:"-"`
+	UserIDs  []string `json:"user_ids" binding:"-"`
+	TagNames []string `json:"tag_names" binding:"-"`
+}
