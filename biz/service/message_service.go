@@ -35,8 +35,7 @@ func (ins *MessageService) GetUserMessages(c *gin.Context, sendID, receiveID uin
 	if err != nil {
 		return nil, err
 	}
-	var messages []*model.UserMessage
-	messages, err = dal.GetMessageDal().GetUserMessages(c, sendID, receiveID)
+	messages, err := dal.GetMessageDal().GetUserMessages(c, sendID, receiveID)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +43,10 @@ func (ins *MessageService) GetUserMessages(c *gin.Context, sendID, receiveID uin
 	if err != nil {
 		return nil, err
 	}
-	messageVOs := convert2UserMessagesVO(messages)
+	messageVOs, err := convert2UserMessagesVO(messages)
+	if err != nil {
+		return nil, err
+	}
 	return &bo.GetUserMessagesResponse{
 		Messages: messageVOs,
 	}, nil
@@ -58,8 +60,7 @@ func (ins *MessageService) GetGroupMessages(c *gin.Context, groupID uint64) (*bo
 	if group.ID == 0 {
 		return nil, common.GROUPNOTEXIST
 	}
-	var messages []*model.GroupMessage
-	messages, err = dal.GetMessageDal().GetGroupMessages(c, groupID)
+	messages, err := dal.GetMessageDal().GetGroupMessages(c, groupID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,29 +68,25 @@ func (ins *MessageService) GetGroupMessages(c *gin.Context, groupID uint64) (*bo
 	if err != nil {
 		return nil, err
 	}
-	messageVOs := convert2GroupMessagesVO(messages)
+	messageVOs, err := convert2GroupMessagesVO(messages)
+	if err != nil {
+		return nil, err
+	}
 	return &bo.GetGroupMessagesResponse{
 		Messages: messageVOs,
 	}, nil
 }
 
 func (ins *MessageService) GetUserMessageNum(c *gin.Context, sendID, receiveID uint64) (*bo.GetUserMessageNumResponse, error) {
-	user, err := dal.GetUserDal().GetUserByID(c, sendID)
+	_, err := dal.GetUserDal().GetUserByID(c, sendID)
 	if err != nil {
 		return nil, err
 	}
-	if user.ID == 0 {
-		return nil, common.USERDOESNOTEXIST
-	}
-	user, err = dal.GetUserDal().GetUserByID(c, receiveID)
+	_, err = dal.GetUserDal().GetUserByID(c, receiveID)
 	if err != nil {
 		return nil, err
 	}
-	if user.ID == 0 {
-		return nil, common.USERDOESNOTEXIST
-	}
-	var cnt int64
-	cnt, err = dal.GetMessageDal().GetUserMessageNum(c, sendID, receiveID)
+	cnt, err := dal.GetMessageDal().GetUserMessageNum(c, sendID, receiveID)
 	if err != nil {
 		return nil, err
 	}
@@ -102,15 +99,11 @@ func (ins *MessageService) GetUserMessageNum(c *gin.Context, sendID, receiveID u
 }
 
 func (ins *MessageService) GetGroupMessageNum(c *gin.Context, groupID uint64) (*bo.GetGroupMessageNumResponse, error) {
-	group, err := dal.GetGroupDal().GetGroupByID(c, groupID)
+	_, err := dal.GetGroupDal().GetGroupByID(c, groupID)
 	if err != nil {
 		return nil, err
 	}
-	if group.ID == 0 {
-		return nil, common.GROUPNOTEXIST
-	}
-	var cnt int64
-	cnt, err = dal.GetMessageDal().GetGroupMessageNum(c, groupID)
+	cnt, err := dal.GetMessageDal().GetGroupMessageNum(c, groupID)
 	if err != nil {
 		return nil, err
 	}
@@ -138,14 +131,13 @@ func (ins *MessageService) SendUserMessage(c *gin.Context, req *bo.SendUserMessa
 	if err != nil {
 		return err
 	}
-	if user.ID == 0 {
-		return common.USERDOESNOTEXIST
-	}
+	var contentEncrypt string
+	contentEncrypt, err = utils.AesEncrypt(req.Content)
 	err = dal.GetMessageDal().CreateUserMessage(c, &model.UserMessage{
 		ID:            utils.GenerateMessageID(),
 		SendUserID:    sendID,
 		ReceiveUserID: receiveID,
-		Content:       req.Content,
+		Content:       contentEncrypt,
 		Name:          user.NickName,
 		Avatar:        user.Avatar,
 		IsRead:        false,
@@ -161,26 +153,20 @@ func (ins *MessageService) SendGroupMessage(c *gin.Context, req *bo.SendGroupMes
 	if err != nil {
 		return err
 	}
-	group, err := dal.GetGroupDal().GetGroupByID(c, groupID)
+	_, err = dal.GetGroupDal().GetGroupByID(c, groupID)
 	if err != nil {
 		return err
 	}
-	if group.ID == 0 {
-		return common.USERDOESNOTEXIST
-	}
-	var user *model.User
-	user, err = dal.GetUserDal().GetUserByID(c, sendID)
+	user, err := dal.GetUserDal().GetUserByID(c, sendID)
 	if err != nil {
 		return err
 	}
-	if user.ID == 0 {
-		return common.USERDOESNOTEXIST
-	}
+	contentEncrypt, err := utils.AesEncrypt(req.Content)
 	err = dal.GetMessageDal().CreateGroupMessage(c, &model.GroupMessage{
 		ID:      utils.GenerateMessageID(),
 		GroupID: groupID,
 		UserID:  sendID,
-		Content: req.Content,
+		Content: contentEncrypt,
 		Name:    user.NickName,
 		Avatar:  user.Avatar,
 		IsRead:  false,
@@ -191,26 +177,34 @@ func (ins *MessageService) SendGroupMessage(c *gin.Context, req *bo.SendGroupMes
 	return nil
 }
 
-func convert2UserMessagesVO(messages []*model.UserMessage) []*vo.UserMessagesVO {
+func convert2UserMessagesVO(messages []*model.UserMessage) ([]*vo.UserMessagesVO, error) {
 	var messageVOs []*vo.UserMessagesVO
 	for _, message := range messages {
+		contentDecrypt, err := utils.AesDecrypt(message.Content)
+		if err != nil {
+			return nil, err
+		}
 		messageVOs = append(messageVOs, &vo.UserMessagesVO{
 			Name:    message.Name,
 			Avatar:  message.Avatar,
-			Content: message.Content,
+			Content: contentDecrypt,
 		})
 	}
-	return messageVOs
+	return messageVOs, nil
 }
 
-func convert2GroupMessagesVO(messages []*model.GroupMessage) []*vo.GroupMessagesVO {
+func convert2GroupMessagesVO(messages []*model.GroupMessage) ([]*vo.GroupMessagesVO, error) {
 	var messageVOs []*vo.GroupMessagesVO
 	for _, message := range messages {
+		contentDecrypt, err := utils.AesDecrypt(message.Content)
+		if err != nil {
+			return nil, err
+		}
 		messageVOs = append(messageVOs, &vo.GroupMessagesVO{
 			Name:    message.Name,
 			Avatar:  message.Avatar,
-			Content: message.Content,
+			Content: contentDecrypt,
 		})
 	}
-	return messageVOs
+	return messageVOs, nil
 }

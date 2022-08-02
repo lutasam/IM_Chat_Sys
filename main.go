@@ -6,9 +6,9 @@ import (
 )
 
 func main() {
-	r := gin.New()
-
 	gin.SetMode(gin.ReleaseMode)
+
+	r := gin.New()
 
 	InitRouterAndMiddleware(r)
 

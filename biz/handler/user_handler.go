@@ -26,8 +26,7 @@ func (ins *UserController) GetUserDetail(c *gin.Context) {
 		utils.ResponseClientError(c, common.USERNOTLOGIN)
 		return
 	}
-	var resp *bo.GetUserDetailResponse
-	resp, err = service.GetUserService().GetUserDetail(c, jwtStruct.UserID)
+	resp, err := service.GetUserService().GetUserDetail(c, jwtStruct.UserID)
 	if err != nil {
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)

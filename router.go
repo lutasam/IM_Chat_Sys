@@ -10,38 +10,39 @@ import (
 	"github.com/lutasam/chat/biz/utils"
 )
 
+// InitRouterAndMiddleware init methods, you can register middleware and router here
 func InitRouterAndMiddleware(r *gin.Engine) {
-	// 设置log文件输出
+	// set log output filepath
 	logFile, err := os.Create(utils.GetConfigResolve().GetConfigString("log.filepath"))
 	if err != nil {
 		panic(err)
 	}
 	gin.DefaultWriter = io.MultiWriter(logFile, os.Stdout)
 
-	// 注册全局中间件Recovery和Logger
+	// register global middlewares Logger and Recovery
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	// 注册分组路由
-	// 登录、注册模块
+	// register modules
+	// login&&register module
 	login := r.Group("/login")
 	handler.RegisterLoginRouter(login)
 
-	// 好友模块
+	// friend module
 	friend := r.Group("/friend")
 	friend.Use(middleware.JWTAuth())
 
-	// 对话模块
+	// message module
 	message := r.Group("/message")
 	message.Use(middleware.JWTAuth())
 	handler.RegisterMessageRouter(message)
 
-	// 用户模块
+	// user module
 	user := r.Group("/user")
 	user.Use(middleware.JWTAuth())
 	handler.RegisterUserRouter(user)
 
-	// 组模块
+	// group module
 	group := r.Group("/group")
 	group.Use(middleware.JWTAuth())
 	handler.RegisterGroupRouter(group)

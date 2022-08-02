@@ -61,12 +61,11 @@ func (ins *GroupService) GetGroupDetail(c *gin.Context, name string) (*bo.GetGro
 	if err != nil {
 		return nil, err
 	}
-	var adminUser *model.User
-	adminUser, err = dal.GetUserDal().GetUserByID(c, group.AdminID)
+	adminUser, err := dal.GetUserDal().GetUserByID(c, group.AdminID)
 	if err != nil {
 		return nil, err
 	}
-	tagVOs := convertTags2TagVOs(group.Tages)
+	tagVOs := convertTags2TagVOs(group.Tags)
 	return &bo.GetGroupDetailResponse{
 		ID:        group.ID,
 		Name:      group.Name,
@@ -82,35 +81,51 @@ func (ins *GroupService) GetGroupDetail(c *gin.Context, name string) (*bo.GetGro
 	}, nil
 }
 
-// TODO: not realize not use this func!
+// GetAllGroups
+// TODO: not realize don't use this func!
 func (ins *GroupService) GetAllGroups(c *gin.Context, userID uint64) (*bo.GetAllGroupsResponse, error) {
 	_, err := dal.GetUserDal().GetUserByID(c, userID)
 	if err != nil {
 		return nil, err
 	}
-	var groups []*model.Group
-	groups, err = dal.GetGroupDal().GetUserGroups(c, userID)
+	groups, err := dal.GetGroupDal().GetUserGroups(c, userID)
 	if err != nil {
 		return nil, err
 	}
-	groupVOs := convertGroups2GroupWithMessageVOs(groups)
+	groupVOs, err := convertGroups2GroupWithMessageVOs(c, groups)
+	if err != nil {
+		return nil, err
+	}
 	return &bo.GetAllGroupsResponse{
 		Total:  len(groupVOs),
 		Groups: groupVOs,
 	}, nil
 }
 
-// TODO: not realize not use this func!
-func convertGroups2GroupWithMessageVOs(groups []*model.Group) []*vo.GroupWithMessageVO {
+// TODO: not realize don't use this func!
+func convertGroups2GroupWithMessageVOs(c *gin.Context, groups []*model.Group) ([]*vo.GroupWithMessageVO, error) {
 	var groupVOs []*vo.GroupWithMessageVO
 	for _, group := range groups {
+		cnt, err := dal.GetMessageDal().GetGroupMessageNum(c, group.ID)
+		if err != nil {
+			return nil, err
+		}
+		lastMessage, err := dal.GetMessageDal().GetLastMessageInGroup(c, group.ID)
+		message, err := utils.AesDecrypt(lastMessage)
+		if err != nil {
+			return nil, err
+		}
+		if err != nil {
+			return nil, err
+		}
 		groupVOs = append(groupVOs, &vo.GroupWithMessageVO{
 			Name:        group.Name,
 			Avatar:      group.Avatar,
-			MessageNum:  0,
-			LastMessage: "not realize",
+			MessageNum:  int(cnt),
+			LastMessage: message,
 		})
 	}
+	return groupVOs, nil
 }
 
 func convertTags2TagVOs(tags []*model.Tag) []*vo.TagVO {
@@ -136,8 +151,7 @@ func convertCreateGroupRequest2Group(c *gin.Context, req *bo.CreateGroupRequest,
 	if err != nil {
 		return nil, err
 	}
-	var tags []*model.Tag
-	tags, err = dal.GetTagDal().GetTagsByNames(c, req.TagNames)
+	tags, err := dal.GetTagDal().GetTagsByNames(c, req.TagNames)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +162,7 @@ func convertCreateGroupRequest2Group(c *gin.Context, req *bo.CreateGroupRequest,
 		Avatar:   req.Avatar,
 		AdminID:  userID,
 		User:     users,
-		Tages:    tags,
+		Tags:     tags,
 	}, nil
 }
 
@@ -165,8 +179,7 @@ func convertUpdateGroupRequest2Group(c *gin.Context, req *bo.UpdateGroupRequest)
 	if err != nil {
 		return nil, err
 	}
-	var tags []*model.Tag
-	tags, err = dal.GetTagDal().GetTagsByNames(c, req.TagNames)
+	tags, err := dal.GetTagDal().GetTagsByNames(c, req.TagNames)
 	if err != nil {
 		return nil, err
 	}
@@ -181,6 +194,6 @@ func convertUpdateGroupRequest2Group(c *gin.Context, req *bo.UpdateGroupRequest)
 		Describe: req.Describe,
 		Avatar:   req.Avatar,
 		User:     users,
-		Tages:    tags,
+		Tags:     tags,
 	}, nil
 }

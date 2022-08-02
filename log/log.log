@@ -1,1 +1,4 @@
-[GIN] 2022/08/01 - 23:25:37 | 500 |    223.9669ms |             ::1 | GET      "/message/get_user_messages/1553406763187728384"
+[GIN] 2022/08/02 - 22:56:25 | 200 |     24.9958ms |             ::1 | POST     "/login/do_login"
+[GIN] 2022/08/02 - 22:57:45 | 400 |      1.4554ms |             ::1 | POST     "/message/send_message_to_user"
+[GIN] 2022/08/02 - 22:57:51 | 200 |     13.6386ms |             ::1 | POST     "/message/send_message_to_user"
+[GIN] 2022/08/02 - 22:58:26 | 200 |     10.4134ms |             ::1 | POST     "/message/send_message_to_user"

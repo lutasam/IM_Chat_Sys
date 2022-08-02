@@ -1,11 +1,10 @@
 package common
 
-const ISSUER = "LUTASAM"                                   // jwt issuer
-const PASSWORDSALT = "astaxie12798akljzmknm.ahkjkljl;k"    // use only for password encryption
-const OTHERSECRETSALT = "9871267812345mn812345xyz"         // user for other encryption
-const EXPIRETIME = 86400000                                // jwt expiration time. 1 day's second
-const CONFIGFILEPATH = "/root/go/src/chat/conf/config.yml" // config file path. Must change for your system
-const MAXMESSAGENUM = 99
+const ISSUER = "LUTASAM"                                // jwt issuer
+const PASSWORDSALT = "astaxie12798akljzmknm.ahkjkljl;k" // use only for password encryption
+const OTHERSECRETSALT = "9871267812345mn812345xyz"      // user for other encryption
+const EXPIRETIME = 86400000                             // jwt expiration time. 1 day's second
+const MAXMESSAGENUM = 99                                // max massage num on UI
 
 const (
 	STATUSOKCODE    = 200

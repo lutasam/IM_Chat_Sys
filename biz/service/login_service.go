@@ -56,7 +56,7 @@ func (ins *LoginService) DoRegister(c *gin.Context, req *bo.RegisterRequest) (*b
 		!utils.IsValidIP(req.IP) || !utils.IsValidURL(req.Avatar) {
 		return nil, common.USERINPUTERROR
 	}
-	user, err := dal.GetUserDal().GetUserByAccount(c, req.Account)
+	user, err := dal.GetUserDal().GetUserByAccountWithoutExistCheck(c, req.Account)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (ins *LoginService) DoRegister(c *gin.Context, req *bo.RegisterRequest) (*b
 		return nil, err
 	}
 	return &bo.RegisterResponse{
-		Account: user.TableName(),
+		Account: user.NickName,
 		Token:   token,
 	}, nil
 }

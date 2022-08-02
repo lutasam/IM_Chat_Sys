@@ -30,14 +30,12 @@ func (ins *MessageController) GetUserMessages(c *gin.Context) {
 		utils.ResponseClientError(c, common.USERNOTLOGIN)
 		return
 	}
-	var receiveID uint64
-	receiveID, err = utils.ParseString2Uint64(c.Param("receive_user_id"))
+	receiveID, err := utils.ParseString2Uint64(c.Param("receive_user_id"))
 	if err != nil {
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
-	var resp *bo.GetUserMessagesResponse
-	resp, err = service.GetMessageService().GetUserMessages(c, jwtStruct.UserID, receiveID)
+	resp, err := service.GetMessageService().GetUserMessages(c, jwtStruct.UserID, receiveID)
 	if err != nil {
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
@@ -56,8 +54,7 @@ func (ins *MessageController) GetGroupMessages(c *gin.Context) {
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
-	var resp *bo.GetGroupMessagesResponse
-	resp, err = service.GetMessageService().GetGroupMessages(c, groupID)
+	resp, err := service.GetMessageService().GetGroupMessages(c, groupID)
 	if err != nil {
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
@@ -79,14 +76,12 @@ func (ins *MessageController) GetUserMessageNum(c *gin.Context) {
 		utils.ResponseClientError(c, common.USERNOTLOGIN)
 		return
 	}
-	var receiveID uint64
-	receiveID, err = utils.ParseString2Uint64(c.Param("receive_user_id"))
+	receiveID, err := utils.ParseString2Uint64(c.Param("receive_user_id"))
 	if err != nil {
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
-	var resp *bo.GetUserMessageNumResponse
-	resp, err = service.GetMessageService().GetUserMessageNum(c, jwtStruct.UserID, receiveID)
+	resp, err := service.GetMessageService().GetUserMessageNum(c, jwtStruct.UserID, receiveID)
 	if err != nil {
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
@@ -105,8 +100,7 @@ func (ins *MessageController) GetGroupMessageNum(c *gin.Context) {
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
-	var resp *bo.GetGroupMessageNumResponse
-	resp, err = service.GetMessageService().GetGroupMessageNum(c, groupID)
+	resp, err := service.GetMessageService().GetGroupMessageNum(c, groupID)
 	if err != nil {
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)

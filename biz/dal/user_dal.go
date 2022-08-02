@@ -61,6 +61,17 @@ func (ins *UserDal) GetUserByAccount(c *gin.Context, account string) (*model.Use
 	return user, nil
 }
 
+// GetUserByAccountWithoutExistCheck this func will not check whether the user exist.
+// in other word, if user does not exist, it will return an empty user.
+func (ins *UserDal) GetUserByAccountWithoutExistCheck(c *gin.Context, account string) (*model.User, error) {
+	user := &model.User{}
+	err := repository.GetDB().Table(user.TableName()).Where("account = ?", account).Find(user).Error
+	if err != nil {
+		return nil, common.DATABASEERROR
+	}
+	return user, nil
+}
+
 func (ins *UserDal) UpdateUser(c *gin.Context, user *model.User) error {
 	err := repository.GetDB().Table(user.TableName()).Updates(user).Error
 	if err != nil {

@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"errors"
+	"path"
+	"runtime"
 	"sync"
 
-	"github.com/lutasam/chat/biz/common"
 	"github.com/spf13/viper"
 )
 
@@ -21,7 +23,12 @@ func GetConfigResolve() *ConfigResolve {
 		Resolve = &ConfigResolve{
 			Viper: viper.New(),
 		}
-		Resolve.Viper.SetConfigFile(common.CONFIGFILEPATH)
+		// achieve current filepath
+		_, filename, _, ok := runtime.Caller(0)
+		if !ok {
+			panic(errors.New("config path cannot init"))
+		}
+		Resolve.Viper.SetConfigFile(path.Dir(filename) + "/../../conf/config.yml")
 		Resolve.Viper.SetConfigType("yml")
 		err := Resolve.Viper.ReadInConfig()
 		if err != nil {
