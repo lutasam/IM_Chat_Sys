@@ -46,7 +46,10 @@ func (ins *MessageService) GetUserMessages(c *gin.Context, sendID, receiveID uin
 	if err != nil {
 		return nil, err
 	}
-	setUserMessagesBeRead(messages)
+	err = dal.GetMessageDal().UpdateUserMessages(c, sendID, receiveID)
+	if err != nil {
+		return nil, err
+	}
 	messageVOs := convert2UserMessagesVO(messages)
 	return &bo.GetUserMessagesResponse{
 		Messages: messageVOs,
@@ -66,7 +69,10 @@ func (ins *MessageService) GetGroupMessages(c *gin.Context, groupID uint64) (*bo
 	if err != nil {
 		return nil, err
 	}
-	setGroupMessagesBeRead(messages)
+	err = dal.GetMessageDal().UpdateGroupMessages(c, groupID)
+	if err != nil {
+		return nil, err
+	}
 	messageVOs := convert2GroupMessagesVO(messages)
 	return &bo.GetGroupMessagesResponse{
 		Messages: messageVOs,
@@ -93,6 +99,9 @@ func (ins *MessageService) GetUserMessageNum(c *gin.Context, sendID, receiveID u
 	if err != nil {
 		return nil, err
 	}
+	if cnt > common.MAXMESSAGENUM {
+		cnt = common.MAXMESSAGENUM
+	}
 	return &bo.GetUserMessageNumResponse{
 		Count: int(cnt),
 	}, nil
@@ -110,6 +119,9 @@ func (ins *MessageService) GetGroupMessageNum(c *gin.Context, groupID uint64) (*
 	cnt, err = dal.GetMessageDal().GetGroupMessageNum(c, groupID)
 	if err != nil {
 		return nil, err
+	}
+	if cnt > common.MAXMESSAGENUM {
+		cnt = common.MAXMESSAGENUM
 	}
 	return &bo.GetGroupMessageNumResponse{
 		Count: int(cnt),
@@ -197,12 +209,6 @@ func convert2UserMessagesVO(messages []*model.UserMessage) []*vo.UserMessagesVO 
 	return messageVOs
 }
 
-func setUserMessagesBeRead(messages []*model.UserMessage) {
-	for _, message := range messages {
-		message.IsRead = true
-	}
-}
-
 func convert2GroupMessagesVO(messages []*model.GroupMessage) []*vo.GroupMessagesVO {
 	var messageVOs []*vo.GroupMessagesVO
 	for _, message := range messages {
@@ -213,10 +219,4 @@ func convert2GroupMessagesVO(messages []*model.GroupMessage) []*vo.GroupMessages
 		})
 	}
 	return messageVOs
-}
-
-func setGroupMessagesBeRead(messages []*model.GroupMessage) {
-	for _, message := range messages {
-		message.IsRead = true
-	}
 }

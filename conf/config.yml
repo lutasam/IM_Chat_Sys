@@ -5,7 +5,7 @@ server:
 mysql:
   user: root
   password: root
-  address: 192.168.2.103
+  address: 192.168.2.107
   port: 3306
   dbname: char_server
   config: charset=utf8&parseTime=True&loc=Local

@@ -1,6 +1,7 @@
 package dal
 
 import (
+	"gorm.io/gorm"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -44,7 +45,7 @@ func (ins *MessageDal) GetUserMessages(c *gin.Context, sendID, receiveID uint64)
 func (ins *MessageDal) GetUserMessageNum(c *gin.Context, sendID, receiveID uint64) (int64, error) {
 	var cnt *int64
 	err := repository.GetDB().Table(model.UserMessage{}.TableName()).
-		Where("send_user_id = ? and receive_user_id = ?", sendID, receiveID).Count(cnt).Error
+		Where("send_user_id = ? and receive_user_id = ? and is_read = ?", sendID, receiveID, 0).Count(cnt).Error
 	if err != nil {
 		return 0, common.DATABASEERROR
 	}
@@ -72,23 +73,25 @@ func (ins *MessageDal) GetGroupMessages(c *gin.Context, groupID uint64) ([]*mode
 func (ins *MessageDal) GetGroupMessageNum(c *gin.Context, groupID uint64) (int64, error) {
 	var cnt *int64
 	err := repository.GetDB().Table(model.GroupMessage{}.TableName()).
-		Where("group_id = ?", groupID).Find(cnt).Error
+		Where("group_id = ? and is_read = ?", groupID, 0).Find(cnt).Error
 	if err != nil {
 		return 0, common.DATABASEERROR
 	}
 	return *cnt, nil
 }
 
-func (ins *MessageDal) UpdateUserMessages(c *gin.Context, messages []*model.UserMessage) error {
-	err := repository.GetDB().Table(model.UserMessage{}.TableName()).Updates(messages).Error
+func (ins *MessageDal) UpdateUserMessages(c *gin.Context, sendID, receiveID uint64) error {
+	err := repository.GetDB().Session(&gorm.Session{AllowGlobalUpdate: true}).Table(model.UserMessage{}.TableName()).
+		Where("send_user_id = ? and receive_user_id = ?", sendID, receiveID).Update("is_read", 1).Error
 	if err != nil {
 		return common.DATABASEERROR
 	}
 	return nil
 }
 
-func (ins *MessageDal) UpdateGroupMessages(c *gin.Context, messages []*model.GroupMessage) error {
-	err := repository.GetDB().Table(model.GroupMessage{}.TableName()).Updates(messages).Error
+func (ins *MessageDal) UpdateGroupMessages(c *gin.Context, groupID uint64) error {
+	err := repository.GetDB().Session(&gorm.Session{AllowGlobalUpdate: true}).Table(model.GroupMessage{}.TableName()).
+		Where("group_id = ?", groupID).Update("is_read", 1).Error
 	if err != nil {
 		return common.DATABASEERROR
 	}

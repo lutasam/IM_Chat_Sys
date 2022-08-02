@@ -36,7 +36,7 @@ func (ins *MessageController) GetUserMessages(c *gin.Context) {
 		return
 	}
 	var resp *bo.GetUserMessagesResponse
-	resp, err = service.GetMessageService().GetUserMessages(c, jwtStruct.(utils.JWTStruct).UserID, receiveID)
+	resp, err = service.GetMessageService().GetUserMessages(c, jwtStruct.(*utils.JWTStruct).UserID, receiveID)
 	if err != nil {
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseError(c, common.USERDOESNOTEXIST)
@@ -84,7 +84,7 @@ func (ins *MessageController) GetUserMessageNum(c *gin.Context) {
 		return
 	}
 	var resp *bo.GetUserMessageNumResponse
-	resp, err = service.GetMessageService().GetUserMessageNum(c, jwtStruct.(utils.JWTStruct).UserID, receiveID)
+	resp, err = service.GetMessageService().GetUserMessageNum(c, jwtStruct.(*utils.JWTStruct).UserID, receiveID)
 	if err != nil {
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseError(c, common.USERDOESNOTEXIST)
@@ -132,7 +132,7 @@ func (ins *MessageController) SendUserMessage(c *gin.Context) {
 		utils.ResponseError(c, common.USERINPUTERROR)
 		return
 	}
-	err = service.GetMessageService().SendUserMessage(c, req, jwtStruct.(utils.JWTStruct).UserID)
+	err = service.GetMessageService().SendUserMessage(c, req, jwtStruct.(*utils.JWTStruct).UserID)
 	if err != nil {
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseError(c, common.USERDOESNOTEXIST)
@@ -157,7 +157,7 @@ func (ins *MessageController) SendGroupMessage(c *gin.Context) {
 		utils.ResponseError(c, common.USERINPUTERROR)
 		return
 	}
-	err = service.GetMessageService().SendGroupMessage(c, req, jwtStruct.(utils.JWTStruct).UserID)
+	err = service.GetMessageService().SendGroupMessage(c, req, jwtStruct.(*utils.JWTStruct).UserID)
 	if err != nil {
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseError(c, common.USERDOESNOTEXIST)

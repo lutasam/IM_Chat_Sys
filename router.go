@@ -34,6 +34,7 @@ func InitRouterAndMiddleware(r *gin.Engine) {
 	// 对话模块
 	message := r.Group("/message")
 	message.Use(middleware.JWTAuth())
+	handler.RegisterMessageRouter(message)
 
 	// 用户模块
 	user := r.Group("/user")

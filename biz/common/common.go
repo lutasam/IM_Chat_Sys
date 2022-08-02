@@ -5,6 +5,7 @@ const JWTSECRETSALT = "LUTASAM"
 const PASSWORDSALT = "astaxie12798akljzmknm.ahkjkljl;k"
 const EXPIRETIME = 86400000
 const CONFIGFILEPATH = "/root/go/src/chat/conf/config.yml"
+const MAXMESSAGENUM = 99
 
 const (
 	STATUSOKCODE    = 200
