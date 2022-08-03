@@ -63,4 +63,8 @@ var (
 		ErrorCode:   100011,
 		ErrorString: "data is not in database. please check your input",
 	}
+	HAVEBEENFRIEND = Error{
+		ErrorCode:   100012,
+		ErrorString: "you both are already friends, no need to be friend again",
+	}
 )

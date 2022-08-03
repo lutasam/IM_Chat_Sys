@@ -47,13 +47,69 @@ func (ins *GroupController) CreateGroup(c *gin.Context) {
 }
 
 func (ins *GroupController) UpdateGroup(c *gin.Context) {
-
+	req := &bo.UpdateGroupRequest{}
+	err := c.ShouldBind(req)
+	if err != nil {
+		utils.ResponseClientError(c, common.USERINPUTERROR)
+		return
+	}
+	err = service.GetGroupService().UpdateGroup(c, req)
+	if err != nil {
+		if errors.Is(err, common.GROUPNOTEXIST) {
+			utils.ResponseClientError(c, common.GROUPNOTEXIST)
+			return
+		} else if errors.Is(err, common.USERDOESNOTEXIST) {
+			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
+			return
+		} else {
+			utils.ResponseServerError(c, common.UNKNOWNERROR)
+			return
+		}
+	}
+	utils.ResponseSuccess(c, nil)
 }
 
 func (ins *GroupController) GetGroupDetail(c *gin.Context) {
-
+	groupIDStr := c.Param("group_id")
+	groupID, err := utils.ParseString2Uint64(groupIDStr)
+	if err != nil {
+		utils.ResponseClientError(c, common.USERINPUTERROR)
+		return
+	}
+	resp, err := service.GetGroupService().GetGroupDetail(c, groupID)
+	if err != nil {
+		if errors.Is(err, common.GROUPNOTEXIST) {
+			utils.ResponseClientError(c, common.GROUPNOTEXIST)
+			return
+		} else if errors.Is(err, common.USERDOESNOTEXIST) {
+			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
+			return
+		} else {
+			utils.ResponseServerError(c, common.UNKNOWNERROR)
+			return
+		}
+	}
+	utils.ResponseSuccess(c, resp)
 }
 
 func (ins *GroupController) GetAllGroups(c *gin.Context) {
-
+	jwtStruct, err := utils.GetCtxUserInfoJWT(c)
+	if err != nil {
+		utils.ResponseClientError(c, common.USERNOTLOGIN)
+		return
+	}
+	resp, err := service.GetGroupService().GetAllGroups(c, jwtStruct.UserID)
+	if err != nil {
+		if errors.Is(err, common.USERNOTLOGIN) {
+			utils.ResponseClientError(c, common.USERNOTLOGIN)
+			return
+		} else if errors.Is(err, common.USERDOESNOTEXIST) {
+			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
+			return
+		} else {
+			utils.ResponseServerError(c, common.UNKNOWNERROR)
+			return
+		}
+	}
+	utils.ResponseSuccess(c, resp)
 }

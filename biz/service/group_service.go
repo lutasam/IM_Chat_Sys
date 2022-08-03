@@ -26,11 +26,11 @@ func GetGroupService() *GroupService {
 	return groupService
 }
 
-func (ins *GroupService) CreateGroup(c *gin.Context, req *bo.CreateGroupRequest, creator_id uint64) error {
+func (ins *GroupService) CreateGroup(c *gin.Context, req *bo.CreateGroupRequest, creatorID uint64) error {
 	if req.Avatar != "" && !utils.IsValidURL(req.Avatar) {
 		return common.USERDOESNOTEXIST
 	}
-	group, err := convertCreateGroupRequest2Group(c, req, creator_id)
+	group, err := convertCreateGroupRequest2Group(c, req, creatorID)
 	if err != nil {
 		return err
 	}
@@ -56,8 +56,8 @@ func (ins *GroupService) UpdateGroup(c *gin.Context, req *bo.UpdateGroupRequest)
 	return nil
 }
 
-func (ins *GroupService) GetGroupDetail(c *gin.Context, name string) (*bo.GetGroupDetailResponse, error) {
-	group, err := dal.GetGroupDal().GetGroupByName(c, name)
+func (ins *GroupService) GetGroupDetail(c *gin.Context, groupID uint64) (*bo.GetGroupDetailResponse, error) {
+	group, err := dal.GetGroupDal().GetGroupByID(c, groupID)
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +77,11 @@ func (ins *GroupService) GetGroupDetail(c *gin.Context, name string) (*bo.GetGro
 			Avatar: adminUser.Avatar,
 		},
 		Tags:      tagVOs,
-		CreatedAt: group.CreatedAt,
+		CreatedAt: utils.ParseTime2DateString(group.CreatedAt),
 	}, nil
 }
 
 // GetAllGroups
-// TODO: not realize don't use this func!
 func (ins *GroupService) GetAllGroups(c *gin.Context, userID uint64) (*bo.GetAllGroupsResponse, error) {
 	_, err := dal.GetUserDal().GetUserByID(c, userID)
 	if err != nil {
@@ -102,7 +101,6 @@ func (ins *GroupService) GetAllGroups(c *gin.Context, userID uint64) (*bo.GetAll
 	}, nil
 }
 
-// TODO: not realize don't use this func!
 func convertGroups2GroupWithMessageVOs(c *gin.Context, groups []*model.Group) ([]*vo.GroupWithMessageVO, error) {
 	var groupVOs []*vo.GroupWithMessageVO
 	for _, group := range groups {

@@ -103,3 +103,37 @@ func (ins *UserDal) GetUsersByIDs(c *gin.Context, ids []uint64) ([]*model.User, 
 	}
 	return users, nil
 }
+
+func (ins *UserDal) GetUserFriends(c *gin.Context, userID uint64) ([]*model.User, error) {
+	var users []*model.User
+	err := repository.GetDB().Table(model.User{}.TableName()).Where("id = ?", userID).Association("Friends").
+		Find(&users).Error
+	if err != nil {
+		return nil, common.DATABASEERROR
+	}
+	return users, nil
+}
+
+func (ins *UserDal) AddFriend(c *gin.Context, userID, friendID uint64) error {
+	err := repository.GetDB().Table(model.User{}.TableName()).Where("id = ?", userID).
+		Association("Friends").Append(&model.User{ID: friendID}).Error
+	if err != nil {
+		return common.DATABASEERROR
+	}
+	err = repository.GetDB().Table(model.User{}.TableName()).Where("id = ?", friendID).
+		Association("Friends").Append(&model.User{ID: userID}).Error
+	if err != nil {
+		return common.DATABASEERROR
+	}
+	return nil
+}
+
+func (ins *UserDal) GetUserFriendByID(c *gin.Context, userID, friendID uint64) (*model.User, error) {
+	friend := &model.User{}
+	err := repository.GetDB().Table(model.User{}.TableName()).Where("user_id = ? and friend_id = ?", userID, friendID).
+		Association("Friends").Find(friend)
+	if err != nil {
+		return nil, common.DATABASEERROR
+	}
+	return friend, nil
+}

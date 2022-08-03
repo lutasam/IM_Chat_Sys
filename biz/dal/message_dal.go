@@ -39,9 +39,6 @@ func (ins *MessageDal) GetUserMessages(c *gin.Context, sendID, receiveID uint64)
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
-	if len(messages) == 0 {
-		return nil, common.DATANOTFOUND
-	}
 	return messages, nil
 }
 
@@ -70,9 +67,6 @@ func (ins *MessageDal) GetGroupMessages(c *gin.Context, groupID uint64) ([]*mode
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
-	if len(messages) == 0 {
-		return nil, common.DATANOTFOUND
-	}
 	return messages, nil
 }
 
@@ -87,7 +81,7 @@ func (ins *MessageDal) GetGroupMessageNum(c *gin.Context, groupID uint64) (int64
 }
 
 func (ins *MessageDal) UpdateUserMessages(c *gin.Context, sendID, receiveID uint64) error {
-	err := repository.GetDB().Session(&gorm.Session{AllowGlobalUpdate: true}).Table(model.UserMessage{}.TableName()).
+	err := repository.GetDB().Table(model.UserMessage{}.TableName()).
 		Where("send_user_id = ? and receive_user_id = ?", sendID, receiveID).Update("is_read", 1).Error
 	if err != nil {
 		return common.DATABASEERROR
@@ -111,6 +105,9 @@ func (ins *MessageDal) GetLastMessageInUser(c *gin.Context, sendID, receiveID ui
 	if err != nil {
 		return "", err
 	}
+	if userMessage.ID == 0 {
+		return "", common.DATANOTFOUND
+	}
 	return userMessage.Content, nil
 }
 
@@ -120,6 +117,9 @@ func (ins *MessageDal) GetLastMessageInGroup(c *gin.Context, groupID uint64) (st
 		Order("created_at desc").First(groupMessage).Error
 	if err != nil {
 		return "", err
+	}
+	if groupMessage.ID == 0 {
+		return "", common.DATANOTFOUND
 	}
 	return groupMessage.Content, nil
 }

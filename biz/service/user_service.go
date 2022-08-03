@@ -29,16 +29,14 @@ func (ins *UserService) GetUserDetail(c *gin.Context, userID uint64) (*bo.GetUse
 	if err != nil {
 		return nil, err
 	}
-	if user.ID == 0 {
-		return nil, common.USERDOESNOTEXIST
-	}
 	return &bo.GetUserDetailResponse{
-		ID:       utils.ParseUint642String(user.ID),
-		Account:  user.Account,
-		NickName: user.NickName,
-		Avatar:   user.Avatar,
-		Sign:     user.Sign,
-		Status:   user.Status,
+		ID:        utils.ParseUint642String(user.ID),
+		Account:   user.Account,
+		NickName:  user.NickName,
+		Avatar:    user.Avatar,
+		Sign:      user.Sign,
+		Status:    user.Status,
+		CreatedAt: utils.ParseTime2DateString(user.CreatedAt),
 	}, nil
 }
 

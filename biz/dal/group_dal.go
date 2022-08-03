@@ -54,9 +54,6 @@ func (ins *GroupDal) GetUserGroups(c *gin.Context, userID uint64) ([]*model.Grou
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
-	if len(groups) == 0 {
-		return nil, common.GROUPNOTEXIST
-	}
 	return groups, nil
 }
 

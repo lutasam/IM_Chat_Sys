@@ -15,7 +15,7 @@ type UserController struct{}
 func RegisterUserRouter(r *gin.RouterGroup) {
 	userController := &UserController{}
 	{
-		r.GET("/get_detail/", userController.GetUserDetail)
+		r.GET("/get_detail", userController.GetUserDetail)
 		r.POST("/update_user_info", userController.UpdateUserInfo)
 	}
 }
