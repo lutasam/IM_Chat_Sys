@@ -16,6 +16,7 @@ func RegisterLoginRouter(r *gin.RouterGroup) {
 	{
 		r.POST("/do_login", loginController.DoLogin)
 		r.POST("/do_register", loginController.DoRegister)
+		r.GET("/do_logout", loginController.DoLogout)
 	}
 }
 
@@ -66,4 +67,8 @@ func (ins *LoginController) DoRegister(c *gin.Context) {
 		}
 	}
 	utils.ResponseSuccess(c, resp)
+}
+
+func (ins *LoginController) DoLogout(c *gin.Context) {
+
 }

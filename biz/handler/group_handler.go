@@ -18,6 +18,7 @@ func RegisterGroupRouter(r *gin.RouterGroup) {
 		r.POST("/update_group", groupController.UpdateGroup)
 		r.GET("/get_group_detail/:group_id", groupController.GetGroupDetail)
 		r.GET("/get_all_groups", groupController.GetAllGroups)
+		r.GET("/find_groups/:input_str", groupController.FindGroups)
 	}
 }
 
@@ -105,6 +106,21 @@ func (ins *GroupController) GetAllGroups(c *gin.Context) {
 			return
 		} else if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
+			return
+		} else {
+			utils.ResponseServerError(c, common.UNKNOWNERROR)
+			return
+		}
+	}
+	utils.ResponseSuccess(c, resp)
+}
+
+func (ins *GroupController) FindGroups(c *gin.Context) {
+	str := c.Param("input_str")
+	resp, err := service.GetGroupService().FindGroups(c, str)
+	if err != nil {
+		if errors.Is(err, common.USERINPUTERROR) {
+			utils.ResponseClientError(c, common.USERINPUTERROR)
 			return
 		} else {
 			utils.ResponseServerError(c, common.UNKNOWNERROR)

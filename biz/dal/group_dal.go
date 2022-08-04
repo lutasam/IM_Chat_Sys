@@ -47,6 +47,24 @@ func (ins *GroupDal) GetGroupByName(c *gin.Context, name string) (*model.Group, 
 	return group, err
 }
 
+func (ins *GroupDal) GetGroupsByID(c *gin.Context, groupID uint64) ([]*model.Group, error) {
+	var groups []*model.Group
+	err := repository.GetDB().Table(model.Group{}.TableName()).Where("id like ?%", groupID).Find(&groups).Error
+	if err != nil {
+		return nil, common.DATABASEERROR
+	}
+	return groups, nil
+}
+
+func (ins *GroupDal) GetGroupsByName(c *gin.Context, name string) ([]*model.Group, error) {
+	var groups []*model.Group
+	err := repository.GetDB().Table(model.Group{}.TableName()).Where("name like ?%", name).Find(&groups).Error
+	if err != nil {
+		return nil, common.DATABASEERROR
+	}
+	return groups, nil
+}
+
 func (ins *GroupDal) GetUserGroups(c *gin.Context, userID uint64) ([]*model.Group, error) {
 	var groups []*model.Group
 	err := repository.GetDB().Table(model.User{}.TableName()).Where("id = ?", userID).
@@ -71,4 +89,14 @@ func (ins *GroupDal) UpdateGroup(c *gin.Context, group *model.Group) error {
 		return common.DATABASEERROR
 	}
 	return nil
+}
+
+func (ins *GroupDal) GetGroupMembers(c *gin.Context, groupID uint64) ([]*model.User, error) {
+	var groupMembers []*model.User
+	err := repository.GetDB().Table(model.Group{}.TableName()).Where("id = ?", groupID).
+		Association("Users").Find(&groupMembers).Error
+	if err != nil {
+		return nil, common.DATABASEERROR
+	}
+	return groupMembers, nil
 }

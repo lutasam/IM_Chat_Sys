@@ -18,7 +18,6 @@ func RegisterFriendRouter(r *gin.RouterGroup) {
 		r.GET("/add_friend/:friend_id", friendController.AddFriend)
 		r.GET("/add_friends_in_group/:group_id", friendController.AddFriendsInGroup)
 		r.GET("/find_friends/:input_str", friendController.FindFriends)
-		r.GET("/find_groups/:input_str", friendController.FindGroups)
 	}
 }
 
@@ -45,21 +44,89 @@ func (ins *FriendController) GetAllFriends(c *gin.Context) {
 }
 
 func (ins *FriendController) GetFriendDetail(c *gin.Context) {
-
+	idstr := c.Param("friend_id")
+	friendID, err := utils.ParseString2Uint64(idstr)
+	if err != nil {
+		utils.ResponseClientError(c, common.USERINPUTERROR)
+		return
+	}
+	resp, err := service.GetFriendService().GetFriendDetail(c, friendID)
+	if err != nil {
+		if errors.Is(err, common.USERDOESNOTEXIST) {
+			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
+			return
+		} else {
+			utils.ResponseServerError(c, common.UNKNOWNERROR)
+			return
+		}
+	}
+	utils.ResponseSuccess(c, resp)
 }
 
 func (ins *FriendController) AddFriend(c *gin.Context) {
-
+	jwtStruct, err := utils.GetCtxUserInfoJWT(c)
+	if err != nil {
+		utils.ResponseClientError(c, common.USERNOTLOGIN)
+		return
+	}
+	idstr := c.Param("friend_id")
+	friendID, err := utils.ParseString2Uint64(idstr)
+	if err != nil {
+		utils.ResponseClientError(c, common.USERINPUTERROR)
+		return
+	}
+	err = service.GetFriendService().AddFriend(c, jwtStruct.UserID, friendID)
+	if err != nil {
+		if errors.Is(err, common.USERDOESNOTEXIST) {
+			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
+			return
+		} else {
+			utils.ResponseServerError(c, common.UNKNOWNERROR)
+			return
+		}
+	}
+	utils.ResponseSuccess(c, nil)
 }
 
 func (ins *FriendController) AddFriendsInGroup(c *gin.Context) {
-
+	jwtStruct, err := utils.GetCtxUserInfoJWT(c)
+	if err != nil {
+		utils.ResponseClientError(c, common.USERNOTLOGIN)
+		return
+	}
+	idstr := c.Param("group_id")
+	groupID, err := utils.ParseString2Uint64(idstr)
+	if err != nil {
+		utils.ResponseClientError(c, common.USERINPUTERROR)
+		return
+	}
+	err = service.GetFriendService().AddFriendInGroup(c, jwtStruct.UserID, groupID)
+	if err != nil {
+		if errors.Is(err, common.USERDOESNOTEXIST) {
+			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
+			return
+		} else if errors.Is(err, common.GROUPNOTEXIST) {
+			utils.ResponseClientError(c, common.GROUPNOTEXIST)
+			return
+		} else {
+			utils.ResponseServerError(c, common.UNKNOWNERROR)
+			return
+		}
+	}
+	utils.ResponseSuccess(c, nil)
 }
 
 func (ins *FriendController) FindFriends(c *gin.Context) {
-
-}
-
-func (ins *FriendController) FindGroups(c *gin.Context) {
-
+	str := c.Param("input_str")
+	resp, err := service.GetFriendService().FindFriends(c, str)
+	if err != nil {
+		if errors.Is(err, common.USERINPUTERROR) {
+			utils.ResponseClientError(c, common.USERINPUTERROR)
+			return
+		} else {
+			utils.ResponseServerError(c, common.UNKNOWNERROR)
+			return
+		}
+	}
+	utils.ResponseSuccess(c, resp)
 }

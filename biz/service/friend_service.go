@@ -84,15 +84,62 @@ func (ins *FriendService) AddFriend(c *gin.Context, userID, friendID uint64) err
 }
 
 func (ins *FriendService) AddFriendInGroup(c *gin.Context, userID, groupID uint64) error {
-
+	_, err := dal.GetUserDal().GetUserByID(c, userID)
+	if err != nil {
+		return err
+	}
+	_, err = dal.GetGroupDal().GetGroupByID(c, groupID)
+	if err != nil {
+		return err
+	}
+	err = dal.GetUserDal().AddFriendInGroup(c, userID, groupID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (ins *FriendService) FindFriends(c *gin.Context, inputStr string) error {
-
+func (ins *FriendService) FindFriends(c *gin.Context, inputStr string) (*bo.FindFriendsResponse, error) {
+	var friends []*model.User
+	maybeID, err := utils.ParseString2Uint64(inputStr)
+	if err == nil {
+		friendsByID, err := dal.GetUserDal().GetUsersByID(c, maybeID)
+		if err != nil {
+			return nil, err
+		}
+		friends = append(friends, friendsByID...)
+	}
+	friendsByAccount, err := dal.GetUserDal().GetUsersByAccount(c, inputStr)
+	if err != nil {
+		return nil, err
+	}
+	friends = append(friends, friendsByAccount...)
+	friendsByNickname, err := dal.GetUserDal().GetUsersByNickname(c, inputStr)
+	if err != nil {
+		return nil, err
+	}
+	friends = append(friends, friendsByNickname...)
+	friendVOs := convertFriends2FriendInSearchVOs(c, friends)
+	if err != nil {
+		return nil, err
+	}
+	return &bo.FindFriendsResponse{
+		Total:   len(friendVOs),
+		Friends: friendVOs,
+	}, nil
 }
 
-func (ins *FriendService) FindGroups(c *gin.Context, inputStr string) error {
-
+func convertFriends2FriendInSearchVOs(c *gin.Context, friends []*model.User) []*vo.FriendInSearchVO {
+	var friendVos []*vo.FriendInSearchVO
+	for _, friend := range friends {
+		friendVos = append(friendVos, &vo.FriendInSearchVO{
+			ID:       utils.ParseUint642String(friend.ID),
+			Account:  friend.Account,
+			Nickname: friend.NickName,
+			Avatar:   friend.Avatar,
+		})
+	}
+	return friendVos
 }
 
 func convertFriends2FriendVOs(c *gin.Context, friends []*model.User, userID uint64) ([]*vo.FriendVO, error) {

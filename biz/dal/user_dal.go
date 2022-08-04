@@ -61,6 +61,33 @@ func (ins *UserDal) GetUserByAccount(c *gin.Context, account string) (*model.Use
 	return user, nil
 }
 
+func (ins *UserDal) GetUsersByID(c *gin.Context, userID uint64) ([]*model.User, error) {
+	var users []*model.User
+	err := repository.GetDB().Table(model.User{}.TableName()).Where("id like ?%", userID).Find(&users).Error
+	if err != nil {
+		return nil, common.DATABASEERROR
+	}
+	return users, nil
+}
+
+func (ins *UserDal) GetUsersByAccount(c *gin.Context, account string) ([]*model.User, error) {
+	var users []*model.User
+	err := repository.GetDB().Table(model.User{}.TableName()).Where("account like ?%", account).Find(&users).Error
+	if err != nil {
+		return nil, common.DATABASEERROR
+	}
+	return users, nil
+}
+
+func (ins *UserDal) GetUsersByNickname(c *gin.Context, nickname string) ([]*model.User, error) {
+	var users []*model.User
+	err := repository.GetDB().Table(model.User{}.TableName()).Where("nickname like ?%", nickname).Find(&users).Error
+	if err != nil {
+		return nil, common.DATABASEERROR
+	}
+	return users, nil
+}
+
 // GetUserByAccountWithoutExistCheck this func will not check whether the user exist.
 // in other word, if user does not exist, it will return an empty user.
 func (ins *UserDal) GetUserByAccountWithoutExistCheck(c *gin.Context, account string) (*model.User, error) {
@@ -136,4 +163,17 @@ func (ins *UserDal) GetUserFriendByID(c *gin.Context, userID, friendID uint64) (
 		return nil, common.DATABASEERROR
 	}
 	return friend, nil
+}
+
+func (ins *UserDal) AddFriendInGroup(c *gin.Context, userID, groupID uint64) error {
+	groupMembers, err := GetGroupDal().GetGroupMembers(c, groupID)
+	if err != nil {
+		return err
+	}
+	err = repository.GetDB().Table(model.User{}.TableName()).Where("id = ?", userID).Association("Friends").
+		Append(groupMembers)
+	if err != nil {
+		return common.DATABASEERROR
+	}
+	return nil
 }

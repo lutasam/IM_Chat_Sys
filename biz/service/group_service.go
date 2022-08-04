@@ -71,7 +71,7 @@ func (ins *GroupService) GetGroupDetail(c *gin.Context, groupID uint64) (*bo.Get
 		Name:      group.Name,
 		Describe:  group.Describe,
 		Avatar:    group.Avatar,
-		MemberNum: len(group.User),
+		MemberNum: len(group.Users),
 		AdminUser: &vo.UserVO{
 			Name:   adminUser.NickName,
 			Avatar: adminUser.Avatar,
@@ -99,6 +99,43 @@ func (ins *GroupService) GetAllGroups(c *gin.Context, userID uint64) (*bo.GetAll
 		Total:  len(groupVOs),
 		Groups: groupVOs,
 	}, nil
+}
+
+func (ins *GroupService) FindGroups(c *gin.Context, inputStr string) (*bo.FindGroupsResponse, error) {
+	var groups []*model.Group
+	maybeID, err := utils.ParseString2Uint64(inputStr)
+	if err == nil {
+		groupsByID, err := dal.GetGroupDal().GetGroupsByID(c, maybeID)
+		if err != nil {
+			return nil, err
+		}
+		groups = append(groups, groupsByID...)
+	}
+	groupsByName, err := dal.GetGroupDal().GetGroupsByName(c, inputStr)
+	if err != nil {
+		return nil, err
+	}
+	groups = append(groups, groupsByName...)
+	groupVOs := convertGroups2GroupInSearchVOs(c, groups)
+	if err != nil {
+		return nil, err
+	}
+	return &bo.FindGroupsResponse{
+		Total:  len(groupVOs),
+		Groups: groupVOs,
+	}, nil
+}
+
+func convertGroups2GroupInSearchVOs(c *gin.Context, groups []*model.Group) []*vo.GroupInSearchVO {
+	var groupVos []*vo.GroupInSearchVO
+	for _, group := range groups {
+		groupVos = append(groupVos, &vo.GroupInSearchVO{
+			ID:     utils.ParseUint642String(group.ID),
+			Name:   group.Name,
+			Avatar: group.Avatar,
+		})
+	}
+	return groupVos
 }
 
 func convertGroups2GroupWithMessageVOs(c *gin.Context, groups []*model.Group) ([]*vo.GroupWithMessageVO, error) {
@@ -159,7 +196,7 @@ func convertCreateGroupRequest2Group(c *gin.Context, req *bo.CreateGroupRequest,
 		Describe: req.Describe,
 		Avatar:   req.Avatar,
 		AdminID:  userID,
-		User:     users,
+		Users:    users,
 		Tags:     tags,
 	}, nil
 }
@@ -191,7 +228,7 @@ func convertUpdateGroupRequest2Group(c *gin.Context, req *bo.UpdateGroupRequest)
 		Name:     req.Name,
 		Describe: req.Describe,
 		Avatar:   req.Avatar,
-		User:     users,
+		Users:    users,
 		Tags:     tags,
 	}, nil
 }

@@ -3,72 +3,40 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/lutasam/chat/biz/bo"
-	"reflect"
+	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
 func TestGetUserService(t *testing.T) {
-	tests := []struct {
-		name string
-		want *UserService
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetUserService(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetUserService() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	Convey("TestGetUserService", t, func() {
+		userService1 := GetUserService()
+		userService2 := GetUserService()
+		So(userService1, ShouldEqual, userService2)
+	})
 }
 
 func TestUserService_GetUserDetail(t *testing.T) {
-	type args struct {
-		c      *gin.Context
-		userID uint64
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *bo.GetUserDetailResponse
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ins := &UserService{}
-			got, err := ins.GetUserDetail(tt.args.c, tt.args.userID)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetUserDetail() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetUserDetail() got = %v, want %v", got, tt.want)
-			}
+	Convey("TestUserService_GetUserDetail", t, func() {
+		Convey("normal", func() {
+			c := &gin.Context{}
+			resp, err := GetUserService().GetUserDetail(c, 0)
+			So(err, ShouldBeNil)
+			So(resp.ID, ShouldEqual, 0)
 		})
-	}
+	})
 }
 
 func TestUserService_UpdateUserInfo(t *testing.T) {
-	type args struct {
-		c   *gin.Context
-		req *bo.UpdateUserInfoRequest
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ins := &UserService{}
-			if err := ins.UpdateUserInfo(tt.args.c, tt.args.req); (err != nil) != tt.wantErr {
-				t.Errorf("UpdateUserInfo() error = %v, wantErr %v", err, tt.wantErr)
-			}
+	Convey("TestUserService_UpdateUserInfo", t, func() {
+		Convey("normal", func() {
+			c := &gin.Context{}
+			err := GetUserService().UpdateUserInfo(c, &bo.UpdateUserInfoRequest{
+				Password: "12345",
+				NickName: "test",
+				Avatar:   "http://baidu.com/test.png",
+				Sign:     "test",
+			})
+			So(err, ShouldBeNil)
 		})
-	}
+	})
 }

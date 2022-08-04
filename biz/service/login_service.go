@@ -80,6 +80,10 @@ func (ins *LoginService) DoRegister(c *gin.Context, req *bo.RegisterRequest) (*b
 	}, nil
 }
 
+func (ins *LoginService) DoLogout(c *gin.Context, userID uint64) error {
+
+}
+
 func generateNewUser(req *bo.RegisterRequest) *model.User {
 	return &model.User{
 		ID:       utils.GenerateUserID(),

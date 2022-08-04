@@ -53,7 +53,7 @@ type GetGroupDetailResponse struct {
 	Avatar    string      `json:"avatar"`
 	MemberNum int         `json:"member_num"`
 	AdminUser *vo.UserVO  `json:"admin_id"`
-	Tags      []*vo.TagVO `json:"tages"`
+	Tags      []*vo.TagVO `json:"tags"`
 	CreatedAt string      `json:"created_at"`
 }
 
@@ -75,4 +75,14 @@ type GetFriendDetailResponse struct {
 	Sign      string `json:"sign"`
 	Status    int    `json:"status"`
 	CreatedAt string `json:"created_at"`
+}
+
+type FindFriendsResponse struct {
+	Total   int                    `json:"total"`
+	Friends []*vo.FriendInSearchVO `json:"friends"`
+}
+
+type FindGroupsResponse struct {
+	Total  int                   `json:"total"`
+	Groups []*vo.GroupInSearchVO `json:"groups"`
 }
