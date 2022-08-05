@@ -98,28 +98,28 @@ func (ins *MessageDal) UpdateGroupMessages(c *gin.Context, groupID uint64) error
 	return nil
 }
 
-func (ins *MessageDal) GetLastMessageInUser(c *gin.Context, sendID, receiveID uint64) (string, error) {
+func (ins *MessageDal) GetLastMessageInUser(c *gin.Context, sendID, receiveID uint64) (*model.UserMessage, error) {
 	userMessage := &model.UserMessage{}
 	err := repository.GetDB().Table(userMessage.TableName()).Where("send_user_id = ? and receive_user_id", sendID, receiveID).
 		Order("created_at desc").First(userMessage).Error
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if userMessage.ID == 0 {
-		return "", common.DATANOTFOUND
+		return nil, common.DATANOTFOUND
 	}
-	return userMessage.Content, nil
+	return userMessage, nil
 }
 
-func (ins *MessageDal) GetLastMessageInGroup(c *gin.Context, groupID uint64) (string, error) {
+func (ins *MessageDal) GetLastMessageInGroup(c *gin.Context, groupID uint64) (*model.GroupMessage, error) {
 	groupMessage := &model.GroupMessage{}
 	err := repository.GetDB().Table(groupMessage.TableName()).Where("group_id = ?", groupID).
 		Order("created_at desc").First(groupMessage).Error
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if groupMessage.ID == 0 {
-		return "", common.DATANOTFOUND
+		return nil, common.DATANOTFOUND
 	}
-	return groupMessage.Content, nil
+	return groupMessage, nil
 }

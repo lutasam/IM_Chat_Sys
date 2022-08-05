@@ -3,7 +3,6 @@ module github.com/lutasam/chat
 go 1.16
 
 require (
-	github.com/agiledragon/gomonkey v2.0.2+incompatible // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/gin-gonic/gin v1.8.1
@@ -11,8 +10,8 @@ require (
 	github.com/goccy/go-json v0.9.10 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
-	github.com/prashantv/gostub v1.1.0 // indirect
-	github.com/smartystreets/goconvey v1.7.2 // indirect
+	github.com/sirupsen/logrus v1.6.0
+	github.com/smartystreets/goconvey v1.7.2
 	github.com/spf13/afero v1.9.2 // indirect
 	github.com/spf13/viper v1.12.0
 	github.com/subosito/gotenv v1.4.0 // indirect

@@ -25,18 +25,22 @@ func RegisterMessageRouter(r *gin.RouterGroup) {
 }
 
 func (ins *MessageController) GetUserMessages(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
 	jwtStruct, err := utils.GetCtxUserInfoJWT(c)
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERNOTLOGIN)
 		return
 	}
 	receiveID, err := utils.ParseString2Uint64(c.Param("receive_user_id"))
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
 	resp, err := service.GetMessageService().GetUserMessages(c, jwtStruct.UserID, receiveID)
 	if err != nil {
+		logger.DoError(err.Error())
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
 			return
@@ -49,13 +53,16 @@ func (ins *MessageController) GetUserMessages(c *gin.Context) {
 }
 
 func (ins *MessageController) GetGroupMessages(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
 	groupID, err := utils.ParseString2Uint64(c.Param("group_id"))
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
 	resp, err := service.GetMessageService().GetGroupMessages(c, groupID)
 	if err != nil {
+		logger.DoError(err.Error())
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
 			return
@@ -71,18 +78,22 @@ func (ins *MessageController) GetGroupMessages(c *gin.Context) {
 }
 
 func (ins *MessageController) GetUserMessageNum(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
 	jwtStruct, err := utils.GetCtxUserInfoJWT(c)
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERNOTLOGIN)
 		return
 	}
 	receiveID, err := utils.ParseString2Uint64(c.Param("receive_user_id"))
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
 	resp, err := service.GetMessageService().GetUserMessageNum(c, jwtStruct.UserID, receiveID)
 	if err != nil {
+		logger.DoError(err.Error())
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
 			return
@@ -95,13 +106,16 @@ func (ins *MessageController) GetUserMessageNum(c *gin.Context) {
 }
 
 func (ins *MessageController) GetGroupMessageNum(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
 	groupID, err := utils.ParseString2Uint64(c.Param("group_id"))
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
 	resp, err := service.GetMessageService().GetGroupMessageNum(c, groupID)
 	if err != nil {
+		logger.DoError(err.Error())
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
 			return
@@ -117,19 +131,23 @@ func (ins *MessageController) GetGroupMessageNum(c *gin.Context) {
 }
 
 func (ins *MessageController) SendUserMessage(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
 	jwtStruct, err := utils.GetCtxUserInfoJWT(c)
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERNOTLOGIN)
 		return
 	}
 	req := &bo.SendUserMessageRequest{}
 	err = c.ShouldBind(req)
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
 	err = service.GetMessageService().SendUserMessage(c, req, jwtStruct.UserID)
 	if err != nil {
+		logger.DoError(err.Error())
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
 			return
@@ -142,19 +160,23 @@ func (ins *MessageController) SendUserMessage(c *gin.Context) {
 }
 
 func (ins *MessageController) SendGroupMessage(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
 	jwtStruct, err := utils.GetCtxUserInfoJWT(c)
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERNOTLOGIN)
 		return
 	}
 	req := &bo.SendGroupMessageRequest{}
 	err = c.ShouldBind(req)
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
 	err = service.GetMessageService().SendGroupMessage(c, req, jwtStruct.UserID)
 	if err != nil {
+		logger.DoError(err.Error())
 		if errors.Is(err, common.USERDOESNOTEXIST) {
 			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
 			return

@@ -22,6 +22,7 @@ type UpdateUserInfoRequest struct {
 	NickName string `json:"nickname" binding:"-"`
 	Avatar   string `json:"avatar" binding:"-"`
 	Sign     string `json:"sign" binding:"-"`
+	Status   string `json:"status" binding:"-"`
 }
 
 type SendUserMessageRequest struct {

@@ -34,10 +34,7 @@ func (ins *FriendService) GetAllFriends(c *gin.Context, userID uint64) (*bo.GetA
 	if err != nil {
 		return nil, err
 	}
-	friendVos, err := convertFriends2FriendVOs(c, friends, userID)
-	if err != nil {
-		return nil, err
-	}
+	friendVos := convertFriends2FriendVOs(c, friends, userID)
 	return &bo.GetAllFriendsResponse{
 		Total:   len(friendVos),
 		Friends: friendVos,
@@ -77,6 +74,29 @@ func (ins *FriendService) AddFriend(c *gin.Context, userID, friendID uint64) err
 		return common.HAVEBEENFRIEND
 	}
 	err = dal.GetUserDal().AddFriend(c, userID, friendID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ins *FriendService) DeleteFriend(c *gin.Context, userID, friendID uint64) error {
+	_, err := dal.GetUserDal().GetUserByID(c, userID)
+	if err != nil {
+		return err
+	}
+	_, err = dal.GetUserDal().GetUserByID(c, friendID)
+	if err != nil {
+		return err
+	}
+	isFriend, err := isUserFriend(c, userID, friendID)
+	if err != nil {
+		return err
+	}
+	if !isFriend {
+		return common.NOTFRIEND
+	}
+	err = dal.GetUserDal().DeleteFriend(c, userID, friendID)
 	if err != nil {
 		return err
 	}
@@ -130,6 +150,7 @@ func (ins *FriendService) FindFriends(c *gin.Context, inputStr string) (*bo.Find
 }
 
 func convertFriends2FriendInSearchVOs(c *gin.Context, friends []*model.User) []*vo.FriendInSearchVO {
+	friends = convert2NoReplicaFriendSlice(friends)
 	var friendVos []*vo.FriendInSearchVO
 	for _, friend := range friends {
 		friendVos = append(friendVos, &vo.FriendInSearchVO{
@@ -142,25 +163,29 @@ func convertFriends2FriendInSearchVOs(c *gin.Context, friends []*model.User) []*
 	return friendVos
 }
 
-func convertFriends2FriendVOs(c *gin.Context, friends []*model.User, userID uint64) ([]*vo.FriendVO, error) {
+func convert2NoReplicaFriendSlice(friends []*model.User) []*model.User {
+	set := make(map[uint64]*model.User)
+	for _, friend := range friends {
+		if _, exist := set[friend.ID]; !exist {
+			set[friend.ID] = friend
+		}
+	}
+	var friendNoReplica []*model.User
+	for _, friend := range set {
+		friendNoReplica = append(friendNoReplica, friend)
+	}
+	return friendNoReplica
+}
+
+func convertFriends2FriendVOs(c *gin.Context, friends []*model.User, userID uint64) []*vo.FriendVO {
 	var friendVos []*vo.FriendVO
 	for _, friend := range friends {
-		messageNum, err := dal.GetMessageDal().GetUserMessageNum(c, userID, friend.ID)
-		if err != nil {
-			return nil, err
-		}
-		lastMessage, err := dal.GetMessageDal().GetLastMessageInUser(c, userID, friend.ID)
-		if err != nil {
-			return nil, err
-		}
 		friendVos = append(friendVos, &vo.FriendVO{
-			Nickname:    friend.NickName,
-			Avatar:      friend.Avatar,
-			MessageNum:  int(messageNum),
-			LastMessage: lastMessage,
+			Nickname: friend.NickName,
+			Avatar:   friend.Avatar,
 		})
 	}
-	return friendVos, nil
+	return friendVos
 }
 
 func isUserFriend(c *gin.Context, userID, friendID uint64) (bool, error) {

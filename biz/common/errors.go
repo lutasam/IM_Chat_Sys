@@ -67,4 +67,8 @@ var (
 		ErrorCode:   100012,
 		ErrorString: "you both are already friends, no need to be friend again",
 	}
+	NOTFRIEND = Error{
+		ErrorCode:   100013,
+		ErrorString: "you both are not friend, no need to delete friend",
+	}
 )

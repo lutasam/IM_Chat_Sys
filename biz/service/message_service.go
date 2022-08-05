@@ -1,6 +1,7 @@
 package service
 
 import (
+	"sort"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -115,6 +116,29 @@ func (ins *MessageService) GetGroupMessageNum(c *gin.Context, groupID uint64) (*
 	}, nil
 }
 
+func (ins *MessageService) GetAllMessages(c *gin.Context, userID uint64) (*bo.GetAllMessagesResponse, error) {
+	_, err := dal.GetUserDal().GetUserByID(c, userID)
+	if err != nil {
+		return nil, err
+	}
+	friends, err := dal.GetUserDal().GetUserFriends(c, userID)
+	if err != nil {
+		return nil, err
+	}
+	groups, err := dal.GetGroupDal().GetUserGroups(c, userID)
+	if err != nil {
+		return nil, err
+	}
+	messageTipVos, err := convert2MessageTipVOs(c, friends, groups, userID)
+	if err != nil {
+		return nil, err
+	}
+	return &bo.GetAllMessagesResponse{
+		Total:    len(messageTipVos),
+		Messages: messageTipVos,
+	}, nil
+}
+
 func (ins *MessageService) SendUserMessage(c *gin.Context, req *bo.SendUserMessageRequest, sendID uint64) error {
 	receiveID, err := utils.ParseString2Uint64(req.ReceiveUserID)
 	if err != nil {
@@ -207,4 +231,46 @@ func convert2GroupMessagesVO(messages []*model.GroupMessage) ([]*vo.GroupMessage
 		})
 	}
 	return messageVOs, nil
+}
+
+func convert2MessageTipVOs(c *gin.Context, friends []*model.User, groups []*model.Group, userID uint64) ([]*vo.MessageTipVO, error) {
+	var messageTipsVOs []*vo.MessageTipVO
+	for _, friend := range friends {
+		messageNum, err := dal.GetMessageDal().GetUserMessageNum(c, userID, friend.ID)
+		if err != nil {
+			return nil, err
+		}
+		lastMessage, err := dal.GetMessageDal().GetLastMessageInUser(c, userID, friend.ID)
+		if err != nil {
+			return nil, err
+		}
+		messageTipsVOs = append(messageTipsVOs, &vo.MessageTipVO{
+			Name:        friend.NickName,
+			Avatar:      friend.Avatar,
+			MessageNum:  int(messageNum),
+			LastMessage: lastMessage.Content,
+			CreatedAt:   lastMessage.CreatedAt,
+		})
+	}
+	for _, group := range groups {
+		messageNum, err := dal.GetMessageDal().GetGroupMessageNum(c, group.ID)
+		if err != nil {
+			return nil, err
+		}
+		lastMessage, err := dal.GetMessageDal().GetLastMessageInGroup(c, group.ID)
+		if err != nil {
+			return nil, err
+		}
+		messageTipsVOs = append(messageTipsVOs, &vo.MessageTipVO{
+			Name:        group.Name,
+			Avatar:      group.Avatar,
+			MessageNum:  int(messageNum),
+			LastMessage: lastMessage.Content,
+			CreatedAt:   lastMessage.CreatedAt,
+		})
+	}
+	sort.Slice(messageTipsVOs, func(i, j int) bool {
+		return messageTipsVOs[i].CreatedAt.After(messageTipsVOs[j].CreatedAt)
+	})
+	return messageTipsVOs, nil
 }

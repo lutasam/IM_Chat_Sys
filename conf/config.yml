@@ -6,7 +6,7 @@ server:
 mysql:
   user: root
   password: root
-  address: 192.168.2.107
+  address: 127.0.0.1
   port: 3306
   dbname: chat_server
   config: charset=utf8&parseTime=True&loc=Local

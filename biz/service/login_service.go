@@ -53,8 +53,17 @@ func (ins *LoginService) DoLogin(c *gin.Context, req *bo.LoginRequest) (*bo.Logi
 func (ins *LoginService) DoRegister(c *gin.Context, req *bo.RegisterRequest) (*bo.RegisterResponse, error) {
 	if req.Account == "" || req.Password == "" || req.IP == "" ||
 		!utils.IsValidPort(req.Port) || req.NickName == "" ||
-		!utils.IsValidIP(req.IP) || !utils.IsValidURL(req.Avatar) {
+		!utils.IsValidIP(req.IP) || req.Avatar != "" && !utils.IsValidURL(req.Avatar) {
 		return nil, common.USERINPUTERROR
+	}
+	if req.NickName == "" {
+		req.NickName = common.DEFAULTNICKNAME
+	}
+	if req.Avatar == "" {
+		req.Avatar = common.DEFAULTAVATARURL
+	}
+	if req.Sign == "" {
+		req.Sign = common.DEFAULTSIGN
 	}
 	user, err := dal.GetUserDal().GetUserByAccountWithoutExistCheck(c, req.Account)
 	if err != nil {
@@ -81,7 +90,15 @@ func (ins *LoginService) DoRegister(c *gin.Context, req *bo.RegisterRequest) (*b
 }
 
 func (ins *LoginService) DoLogout(c *gin.Context, userID uint64) error {
-
+	_, err := dal.GetUserDal().GetUserByID(c, userID)
+	if err != nil {
+		return err
+	}
+	err = dal.GetUserDal().UpdateUser(c, &model.User{ID: userID, Status: common.OFFLINE.Int()})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func generateNewUser(req *bo.RegisterRequest) *model.User {

@@ -19,23 +19,28 @@ func RegisterGroupRouter(r *gin.RouterGroup) {
 		r.GET("/get_group_detail/:group_id", groupController.GetGroupDetail)
 		r.GET("/get_all_groups", groupController.GetAllGroups)
 		r.GET("/find_groups/:input_str", groupController.FindGroups)
+		r.GET("/attend_in_group/:group_id")
 	}
 }
 
 func (ins *GroupController) CreateGroup(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
 	jwtStruct, err := utils.GetCtxUserInfoJWT(c)
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERNOTLOGIN)
 		return
 	}
 	req := &bo.CreateGroupRequest{}
 	err = c.ShouldBind(req)
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
 	err = service.GetGroupService().CreateGroup(c, req, jwtStruct.UserID)
 	if err != nil {
+		logger.DoError(err.Error())
 		if errors.Is(err, common.USERNOTLOGIN) {
 			utils.ResponseClientError(c, common.USERNOTLOGIN)
 			return
@@ -48,14 +53,17 @@ func (ins *GroupController) CreateGroup(c *gin.Context) {
 }
 
 func (ins *GroupController) UpdateGroup(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
 	req := &bo.UpdateGroupRequest{}
 	err := c.ShouldBind(req)
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
 	err = service.GetGroupService().UpdateGroup(c, req)
 	if err != nil {
+		logger.DoError(err.Error())
 		if errors.Is(err, common.GROUPNOTEXIST) {
 			utils.ResponseClientError(c, common.GROUPNOTEXIST)
 			return
@@ -71,14 +79,17 @@ func (ins *GroupController) UpdateGroup(c *gin.Context) {
 }
 
 func (ins *GroupController) GetGroupDetail(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
 	groupIDStr := c.Param("group_id")
 	groupID, err := utils.ParseString2Uint64(groupIDStr)
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERINPUTERROR)
 		return
 	}
 	resp, err := service.GetGroupService().GetGroupDetail(c, groupID)
 	if err != nil {
+		logger.DoError(err.Error())
 		if errors.Is(err, common.GROUPNOTEXIST) {
 			utils.ResponseClientError(c, common.GROUPNOTEXIST)
 			return
@@ -94,13 +105,16 @@ func (ins *GroupController) GetGroupDetail(c *gin.Context) {
 }
 
 func (ins *GroupController) GetAllGroups(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
 	jwtStruct, err := utils.GetCtxUserInfoJWT(c)
 	if err != nil {
+		logger.DoError(err.Error())
 		utils.ResponseClientError(c, common.USERNOTLOGIN)
 		return
 	}
 	resp, err := service.GetGroupService().GetAllGroups(c, jwtStruct.UserID)
 	if err != nil {
+		logger.DoError(err.Error())
 		if errors.Is(err, common.USERNOTLOGIN) {
 			utils.ResponseClientError(c, common.USERNOTLOGIN)
 			return
@@ -116,9 +130,11 @@ func (ins *GroupController) GetAllGroups(c *gin.Context) {
 }
 
 func (ins *GroupController) FindGroups(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
 	str := c.Param("input_str")
 	resp, err := service.GetGroupService().FindGroups(c, str)
 	if err != nil {
+		logger.DoError(err.Error())
 		if errors.Is(err, common.USERINPUTERROR) {
 			utils.ResponseClientError(c, common.USERINPUTERROR)
 			return
@@ -128,4 +144,36 @@ func (ins *GroupController) FindGroups(c *gin.Context) {
 		}
 	}
 	utils.ResponseSuccess(c, resp)
+}
+
+func (ins *GroupController) AttendInGroup(c *gin.Context) {
+	logger := utils.GetCtxLogger(c)
+	jwtStruct, err := utils.GetCtxUserInfoJWT(c)
+	if err != nil {
+		logger.DoError(err.Error())
+		utils.ResponseClientError(c, common.USERNOTLOGIN)
+		return
+	}
+	idstr := c.Param("group_id")
+	id, err := utils.ParseString2Uint64(idstr)
+	if err != nil {
+		logger.DoError(err.Error())
+		utils.ResponseClientError(c, common.USERINPUTERROR)
+		return
+	}
+	err = service.GetGroupService().AttendInGroup(c, id, jwtStruct.UserID)
+	if err != nil {
+		logger.DoError(err.Error())
+		if errors.Is(err, common.USERDOESNOTEXIST) {
+			utils.ResponseClientError(c, common.USERDOESNOTEXIST)
+			return
+		} else if errors.Is(err, common.GROUPNOTEXIST) {
+			utils.ResponseClientError(c, common.GROUPNOTEXIST)
+			return
+		} else {
+			utils.ResponseServerError(c, common.UNKNOWNERROR)
+			return
+		}
+	}
+	utils.ResponseSuccess(c, nil)
 }

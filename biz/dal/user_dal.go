@@ -1,6 +1,7 @@
 package dal
 
 import (
+	"strconv"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -63,7 +64,7 @@ func (ins *UserDal) GetUserByAccount(c *gin.Context, account string) (*model.Use
 
 func (ins *UserDal) GetUsersByID(c *gin.Context, userID uint64) ([]*model.User, error) {
 	var users []*model.User
-	err := repository.GetDB().Table(model.User{}.TableName()).Where("id like ?%", userID).Find(&users).Error
+	err := repository.GetDB().Table(model.User{}.TableName()).Where("id like ?", strconv.FormatUint(userID, 10)+"%").Find(&users).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
@@ -72,7 +73,7 @@ func (ins *UserDal) GetUsersByID(c *gin.Context, userID uint64) ([]*model.User, 
 
 func (ins *UserDal) GetUsersByAccount(c *gin.Context, account string) ([]*model.User, error) {
 	var users []*model.User
-	err := repository.GetDB().Table(model.User{}.TableName()).Where("account like ?%", account).Find(&users).Error
+	err := repository.GetDB().Table(model.User{}.TableName()).Where("account like ?", account+"%").Find(&users).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
@@ -81,7 +82,7 @@ func (ins *UserDal) GetUsersByAccount(c *gin.Context, account string) ([]*model.
 
 func (ins *UserDal) GetUsersByNickname(c *gin.Context, nickname string) ([]*model.User, error) {
 	var users []*model.User
-	err := repository.GetDB().Table(model.User{}.TableName()).Where("nickname like ?%", nickname).Find(&users).Error
+	err := repository.GetDB().Table(model.User{}.TableName()).Where("nickname like ?", nickname+"%").Find(&users).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
@@ -133,8 +134,8 @@ func (ins *UserDal) GetUsersByIDs(c *gin.Context, ids []uint64) ([]*model.User, 
 
 func (ins *UserDal) GetUserFriends(c *gin.Context, userID uint64) ([]*model.User, error) {
 	var users []*model.User
-	err := repository.GetDB().Table(model.User{}.TableName()).Where("id = ?", userID).Association("Friends").
-		Find(&users).Error
+	err := repository.GetDB().Raw("select a.* from users as a, users_friends as b "+
+		"where b.user_id = ? and b.friend_id = a.id", userID).Scan(&users).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
@@ -142,13 +143,25 @@ func (ins *UserDal) GetUserFriends(c *gin.Context, userID uint64) ([]*model.User
 }
 
 func (ins *UserDal) AddFriend(c *gin.Context, userID, friendID uint64) error {
-	err := repository.GetDB().Table(model.User{}.TableName()).Where("id = ?", userID).
-		Association("Friends").Append(&model.User{ID: friendID}).Error
+	err := repository.GetDB().Exec("insert into users_friends values(?, ?)", userID, friendID).Error
 	if err != nil {
 		return common.DATABASEERROR
 	}
-	err = repository.GetDB().Table(model.User{}.TableName()).Where("id = ?", friendID).
-		Association("Friends").Append(&model.User{ID: userID}).Error
+	err = repository.GetDB().Exec("insert into users_friends values(?, ?)", friendID, userID).Error
+	if err != nil {
+		return common.DATABASEERROR
+	}
+	return nil
+}
+
+func (ins *UserDal) DeleteFriend(c *gin.Context, userID, friendID uint64) error {
+	err := repository.GetDB().Exec("delete from users_friends "+
+		"where user_id = ? and friend_id = ?", userID, friendID).Error
+	if err != nil {
+		return common.DATABASEERROR
+	}
+	err = repository.GetDB().Exec("delete from users_friends "+
+		"where user_id = ? and friend_id = ?", friendID, userID).Error
 	if err != nil {
 		return common.DATABASEERROR
 	}
@@ -157,8 +170,10 @@ func (ins *UserDal) AddFriend(c *gin.Context, userID, friendID uint64) error {
 
 func (ins *UserDal) GetUserFriendByID(c *gin.Context, userID, friendID uint64) (*model.User, error) {
 	friend := &model.User{}
-	err := repository.GetDB().Table(model.User{}.TableName()).Where("user_id = ? and friend_id = ?", userID, friendID).
-		Association("Friends").Find(friend)
+	err := repository.GetDB().
+		Raw("select c.* from users as a, users_friends as b, users as c "+
+			"where a.id = b.user_id and b.friend_id = c.id and a.id = ? and c.id = ?", userID, friendID).
+		Scan(friend).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}

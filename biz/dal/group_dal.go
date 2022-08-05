@@ -1,6 +1,7 @@
 package dal
 
 import (
+	"strconv"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -25,7 +26,8 @@ func GetGroupDal() *GroupDal {
 
 func (ins *GroupDal) GetGroupByID(c *gin.Context, groupID uint64) (*model.Group, error) {
 	group := &model.Group{}
-	err := repository.GetDB().Table(group.TableName()).Where("id = ?", groupID).Find(&group).Error
+	err := repository.GetDB().Table(group.TableName()).Preload("Users").
+		Where("id = ?", groupID).Find(&group).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
@@ -37,7 +39,8 @@ func (ins *GroupDal) GetGroupByID(c *gin.Context, groupID uint64) (*model.Group,
 
 func (ins *GroupDal) GetGroupByName(c *gin.Context, name string) (*model.Group, error) {
 	group := &model.Group{}
-	err := repository.GetDB().Table(group.TableName()).Where("name = ?", name).Find(&group).Error
+	err := repository.GetDB().Table(group.TableName()).Preload("Users").
+		Where("name = ?", name).Find(&group).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
@@ -49,7 +52,8 @@ func (ins *GroupDal) GetGroupByName(c *gin.Context, name string) (*model.Group, 
 
 func (ins *GroupDal) GetGroupsByID(c *gin.Context, groupID uint64) ([]*model.Group, error) {
 	var groups []*model.Group
-	err := repository.GetDB().Table(model.Group{}.TableName()).Where("id like ?%", groupID).Find(&groups).Error
+	err := repository.GetDB().Table(model.Group{}.TableName()).
+		Where("id like ?", strconv.FormatUint(groupID, 10)+"%").Find(&groups).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
@@ -58,7 +62,8 @@ func (ins *GroupDal) GetGroupsByID(c *gin.Context, groupID uint64) ([]*model.Gro
 
 func (ins *GroupDal) GetGroupsByName(c *gin.Context, name string) ([]*model.Group, error) {
 	var groups []*model.Group
-	err := repository.GetDB().Table(model.Group{}.TableName()).Where("name like ?%", name).Find(&groups).Error
+	err := repository.GetDB().Table(model.Group{}.TableName()).
+		Where("name like ?", name+"%").Find(&groups).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
@@ -67,8 +72,8 @@ func (ins *GroupDal) GetGroupsByName(c *gin.Context, name string) ([]*model.Grou
 
 func (ins *GroupDal) GetUserGroups(c *gin.Context, userID uint64) ([]*model.Group, error) {
 	var groups []*model.Group
-	err := repository.GetDB().Table(model.User{}.TableName()).Where("id = ?", userID).
-		Association("Groups").Find(&groups).Error
+	err := repository.GetDB().Raw("select b.* from users_groups as a, `groups` as b "+
+		"where a.user_id = ? and a.group_id = b.id", userID).Scan(&groups).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
@@ -99,4 +104,12 @@ func (ins *GroupDal) GetGroupMembers(c *gin.Context, groupID uint64) ([]*model.U
 		return nil, common.DATABASEERROR
 	}
 	return groupMembers, nil
+}
+
+func (ins *GroupDal) AttendInGroup(c *gin.Context, groupID, userID uint64) error {
+	err := repository.GetDB().Exec("insert into users_groups values(?, ?)", groupID, userID).Error
+	if err != nil {
+		return common.DATABASEERROR
+	}
+	return nil
 }

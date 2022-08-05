@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"github.com/lutasam/chat/biz/model"
 	"github.com/lutasam/chat/biz/utils"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -19,7 +20,13 @@ func init() {
 		utils.GetConfigResolve().GetConfigString("mysql.address"),
 		utils.GetConfigResolve().GetConfigString("mysql.port"),
 		utils.GetConfigResolve().GetConfigString("mysql.dbname"),
-		utils.GetConfigResolve().GetConfigString("mysql.config"))), &gorm.Config{})
+		utils.GetConfigResolve().GetConfigString("mysql.config"))), &gorm.Config{
+		PrepareStmt: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+	err = DB.AutoMigrate(&model.User{}, &model.UserMessage{}, &model.GroupMessage{}, &model.Group{}, &model.Tag{})
 	if err != nil {
 		panic(err)
 	}

@@ -35,29 +35,39 @@ func (ins *UserService) GetUserDetail(c *gin.Context, userID uint64) (*bo.GetUse
 		NickName:  user.NickName,
 		Avatar:    user.Avatar,
 		Sign:      user.Sign,
-		Status:    user.Status,
+		Status:    common.ParseInt2Status(user.Status).String(),
 		CreatedAt: utils.ParseTime2DateString(user.CreatedAt),
 	}, nil
 }
 
-func (ins *UserService) UpdateUserInfo(c *gin.Context, req *bo.UpdateUserInfoRequest) error {
+func (ins *UserService) UpdateUserInfo(c *gin.Context, req *bo.UpdateUserInfoRequest, userID uint64) error {
 	if req.Avatar != "" && !utils.IsValidURL(req.Avatar) {
 		return common.USERINPUTERROR
 	}
-	jwtStruct, exist := c.Get("jwtStruct")
-	if !exist {
-		return common.USERNOTLOGIN
+	if req.NickName == "" {
+		req.NickName = common.DEFAULTNICKNAME
+	}
+	if req.Avatar == "" {
+		req.Avatar = common.DEFAULTAVATARURL
+	}
+	if req.Sign == "" {
+		req.Sign = common.DEFAULTSIGN
+	}
+	_, err := dal.GetUserDal().GetUserByID(c, userID)
+	if err != nil {
+		return err
 	}
 	code, err := utils.EncryptPassword(req.Password)
 	if err != nil {
 		return err
 	}
 	err = dal.GetUserDal().UpdateUser(c, &model.User{
-		ID:       jwtStruct.(*utils.JWTStruct).UserID,
+		ID:       userID,
 		Password: code,
 		NickName: req.NickName,
 		Avatar:   req.Avatar,
 		Sign:     req.Sign,
+		Status:   common.ParseString2Status(req.Status).Int(),
 	})
 	if err != nil {
 		return err

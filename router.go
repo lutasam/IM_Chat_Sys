@@ -1,26 +1,24 @@
 package main
 
 import (
-	"io"
-	"os"
-
 	"github.com/gin-gonic/gin"
 	"github.com/lutasam/chat/biz/handler"
 	"github.com/lutasam/chat/biz/middleware"
-	"github.com/lutasam/chat/biz/utils"
 )
 
 // InitRouterAndMiddleware init methods, you can register middleware and router here
 func InitRouterAndMiddleware(r *gin.Engine) {
+	// TODO: this config is gin.Logger's config, do not use because we use our logger system
 	// set log output filepath
-	logFile, err := os.Create(utils.GetConfigResolve().GetConfigString("log.filepath"))
-	if err != nil {
-		panic(err)
-	}
-	gin.DefaultWriter = io.MultiWriter(logFile, os.Stdout)
+	// logFile, err := os.Create(utils.GetConfigResolve().GetConfigString("log.filepath"))
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// gin.DefaultWriter = io.MultiWriter(logFile, os.Stdout)
 
 	// register global middlewares Logger and Recovery
-	r.Use(gin.Logger())
+	// r.Use(gin.Logger()) // gin's default Logger
+	r.Use(middleware.RequestDoTracerId()) // our Logger
 	r.Use(gin.Recovery())
 
 	// register modules
@@ -31,6 +29,7 @@ func InitRouterAndMiddleware(r *gin.Engine) {
 	// friend module
 	friend := r.Group("/friend")
 	friend.Use(middleware.JWTAuth())
+	handler.RegisterFriendRouter(friend)
 
 	// message module
 	message := r.Group("/message")

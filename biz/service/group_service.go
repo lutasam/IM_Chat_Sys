@@ -26,14 +26,25 @@ func GetGroupService() *GroupService {
 	return groupService
 }
 
-func (ins *GroupService) CreateGroup(c *gin.Context, req *bo.CreateGroupRequest, creatorID uint64) error {
+func (ins *GroupService) CreateGroup(c *gin.Context, req *bo.CreateGroupRequest, userID uint64) error {
 	if req.Avatar != "" && !utils.IsValidURL(req.Avatar) {
 		return common.USERDOESNOTEXIST
 	}
-	group, err := convertCreateGroupRequest2Group(c, req, creatorID)
+	if req.Avatar == "" {
+		req.Avatar = common.DEFAULTAVATARURL
+	}
+	if req.Describe == "" {
+		req.Describe = common.DEFAULTDESCRIPTION
+	}
+	user, err := dal.GetUserDal().GetUserByID(c, userID)
 	if err != nil {
 		return err
 	}
+	group, err := convertCreateGroupRequest2Group(c, req, userID)
+	if err != nil {
+		return err
+	}
+	group.Users = append(group.Users, user)
 	err = dal.GetGroupDal().CreateGroup(c, group)
 	if err != nil {
 		return err
@@ -44,6 +55,12 @@ func (ins *GroupService) CreateGroup(c *gin.Context, req *bo.CreateGroupRequest,
 func (ins *GroupService) UpdateGroup(c *gin.Context, req *bo.UpdateGroupRequest) error {
 	if req.Avatar != "" && !utils.IsValidURL(req.Avatar) || req.Name == "" {
 		return common.USERINPUTERROR
+	}
+	if req.Avatar == "" {
+		req.Avatar = common.DEFAULTAVATARURL
+	}
+	if req.Describe == "" {
+		req.Describe = common.DEFAULTDESCRIPTION
 	}
 	group, err := convertUpdateGroupRequest2Group(c, req)
 	if err != nil {
@@ -91,10 +108,7 @@ func (ins *GroupService) GetAllGroups(c *gin.Context, userID uint64) (*bo.GetAll
 	if err != nil {
 		return nil, err
 	}
-	groupVOs, err := convertGroups2GroupWithMessageVOs(c, groups)
-	if err != nil {
-		return nil, err
-	}
+	groupVOs := convertGroups2GroupWithMessageVOs(c, groups)
 	return &bo.GetAllGroupsResponse{
 		Total:  len(groupVOs),
 		Groups: groupVOs,
@@ -116,7 +130,7 @@ func (ins *GroupService) FindGroups(c *gin.Context, inputStr string) (*bo.FindGr
 		return nil, err
 	}
 	groups = append(groups, groupsByName...)
-	groupVOs := convertGroups2GroupInSearchVOs(c, groups)
+	groupVOs := convertGroups2GroupInSearchVOs(groups)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +140,24 @@ func (ins *GroupService) FindGroups(c *gin.Context, inputStr string) (*bo.FindGr
 	}, nil
 }
 
-func convertGroups2GroupInSearchVOs(c *gin.Context, groups []*model.Group) []*vo.GroupInSearchVO {
+func (ins *GroupService) AttendInGroup(c *gin.Context, groupID, userID uint64) error {
+	_, err := dal.GetGroupDal().GetGroupByID(c, groupID)
+	if err != nil {
+		return err
+	}
+	_, err = dal.GetUserDal().GetUserByID(c, userID)
+	if err != nil {
+		return err
+	}
+	err = dal.GetGroupDal().AttendInGroup(c, groupID, userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func convertGroups2GroupInSearchVOs(groups []*model.Group) []*vo.GroupInSearchVO {
+	groups = convert2NoReplicaGroupSlice(groups)
 	var groupVos []*vo.GroupInSearchVO
 	for _, group := range groups {
 		groupVos = append(groupVos, &vo.GroupInSearchVO{
@@ -138,29 +169,15 @@ func convertGroups2GroupInSearchVOs(c *gin.Context, groups []*model.Group) []*vo
 	return groupVos
 }
 
-func convertGroups2GroupWithMessageVOs(c *gin.Context, groups []*model.Group) ([]*vo.GroupWithMessageVO, error) {
-	var groupVOs []*vo.GroupWithMessageVO
+func convertGroups2GroupWithMessageVOs(c *gin.Context, groups []*model.Group) []*vo.GroupVO {
+	var groupVOs []*vo.GroupVO
 	for _, group := range groups {
-		cnt, err := dal.GetMessageDal().GetGroupMessageNum(c, group.ID)
-		if err != nil {
-			return nil, err
-		}
-		lastMessage, err := dal.GetMessageDal().GetLastMessageInGroup(c, group.ID)
-		message, err := utils.AesDecrypt(lastMessage)
-		if err != nil {
-			return nil, err
-		}
-		if err != nil {
-			return nil, err
-		}
-		groupVOs = append(groupVOs, &vo.GroupWithMessageVO{
-			Name:        group.Name,
-			Avatar:      group.Avatar,
-			MessageNum:  int(cnt),
-			LastMessage: message,
+		groupVOs = append(groupVOs, &vo.GroupVO{
+			Name:   group.Name,
+			Avatar: group.Avatar,
 		})
 	}
-	return groupVOs, nil
+	return groupVOs
 }
 
 func convertTags2TagVOs(tags []*model.Tag) []*vo.TagVO {
@@ -231,4 +248,18 @@ func convertUpdateGroupRequest2Group(c *gin.Context, req *bo.UpdateGroupRequest)
 		Users:    users,
 		Tags:     tags,
 	}, nil
+}
+
+func convert2NoReplicaGroupSlice(groups []*model.Group) []*model.Group {
+	set := make(map[uint64]*model.Group)
+	for _, group := range groups {
+		if _, exist := set[group.ID]; !exist {
+			set[group.ID] = group
+		}
+	}
+	var groupNoReplica []*model.Group
+	for _, group := range set {
+		groupNoReplica = append(groupNoReplica, group)
+	}
+	return groupNoReplica
 }

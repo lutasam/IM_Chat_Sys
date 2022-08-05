@@ -26,7 +26,7 @@ type GetUserDetailResponse struct {
 	NickName  string `json:"nickname"`
 	Avatar    string `json:"avatar"`
 	Sign      string `json:"sign"`
-	Status    int    `json:"status"`
+	Status    string `json:"status"`
 	CreatedAt string `json:"created_at"`
 }
 
@@ -58,8 +58,8 @@ type GetGroupDetailResponse struct {
 }
 
 type GetAllGroupsResponse struct {
-	Total  int                      `json:"total"`
-	Groups []*vo.GroupWithMessageVO `json:"groups"`
+	Total  int           `json:"total"`
+	Groups []*vo.GroupVO `json:"groups"`
 }
 
 type GetAllFriendsResponse struct {
@@ -85,4 +85,9 @@ type FindFriendsResponse struct {
 type FindGroupsResponse struct {
 	Total  int                   `json:"total"`
 	Groups []*vo.GroupInSearchVO `json:"groups"`
+}
+
+type GetAllMessagesResponse struct {
+	Total    int                `json:"total"`
+	Messages []*vo.MessageTipVO `json:"messages"`
 }
