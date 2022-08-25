@@ -81,10 +81,10 @@ func TestMessageService_SendUserMessage(t *testing.T) {
 	Convey("TestMessageService_SendUserMessage", t, func() {
 		c := &gin.Context{}
 		Convey("normal", func() {
-			err := GetMessageService().SendUserMessage(c, &bo.SendUserMessageRequest{
-				ReceiveUserID: "",
-				Content:       "",
-			})
+			// err := GetMessageService().SendUserMessage(c, &bo.SendUserMessageRequest{
+			// 	ReceiveUserID: "",
+			// 	Content:       "",
+			// })
 		})
 	})
 }

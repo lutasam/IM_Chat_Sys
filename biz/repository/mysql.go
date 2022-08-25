@@ -8,9 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	DB *gorm.DB
-)
+var DB *gorm.DB
 
 func init() {
 	var err error

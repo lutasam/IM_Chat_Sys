@@ -71,4 +71,8 @@ var (
 		ErrorCode:   100013,
 		ErrorString: "you both are not friend, no need to delete friend",
 	}
+	REDISERROR = Error{
+		ErrorCode:   100014,
+		ErrorString: "server redis db error, please try later",
+	}
 )

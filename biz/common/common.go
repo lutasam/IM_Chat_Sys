@@ -11,6 +11,10 @@ const DEFAULTSIGN = "This man doesn't say anything."
 const DEFAULTNICKNAME = "SHAREUSER"
 
 const (
+	USERDETAILPREFIX = "user_detail_"
+)
+
+const (
 	STATUSOKCODE    = 200
 	CLIENTERRORCODE = 400
 	SERVERERRORCODE = 500

@@ -1,8 +1,10 @@
 package dal
 
 import (
+	"encoding/json"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lutasam/chat/biz/common"
@@ -40,13 +42,34 @@ func (ins *UserDal) CreateUser(c *gin.Context, user *model.User) error {
 
 func (ins *UserDal) GetUserByID(c *gin.Context, userID uint64) (*model.User, error) {
 	user := &model.User{}
-	err := repository.GetDB().Table(user.TableName()).Where("id = ?", userID).Find(user).Error
+	// try to get user detail from cache
+	key := common.USERDETAILPREFIX + utils.ParseUint642String(userID)
+	resp, err := repository.GetRedisDB().Get(key).Result()
+	if err == nil {
+		err := json.Unmarshal([]byte(resp), user)
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
+	}
+
+	err = repository.GetDB().Table(user.TableName()).Where("id = ?", userID).Find(user).Error
 	if err != nil {
 		return nil, common.DATABASEERROR
 	}
 	if user.ID == 0 {
 		return nil, common.USERDOESNOTEXIST
 	}
+
+	// send user detail to redis
+	go func() {
+		val, _ := json.Marshal(user)
+		_, err := repository.GetRedisDB().Set(key, string(val), time.Hour*24).Result()
+		if err != nil {
+			// should log redis error, but no need to stop the program
+		}
+	}()
+
 	return user, nil
 }
 
@@ -59,6 +82,16 @@ func (ins *UserDal) GetUserByAccount(c *gin.Context, account string) (*model.Use
 	if user.ID == 0 {
 		return nil, common.USERDOESNOTEXIST
 	}
+
+	// send user detail to redis
+	go func() {
+		val, _ := json.Marshal(user)
+		_, err := repository.GetRedisDB().Set(common.USERDETAILPREFIX+utils.ParseUint642String(user.ID), string(val), time.Hour*24).Result()
+		if err != nil {
+			// should log redis error, but no need to stop the program
+		}
+	}()
+
 	return user, nil
 }
 
@@ -105,6 +138,14 @@ func (ins *UserDal) UpdateUser(c *gin.Context, user *model.User) error {
 	if err != nil {
 		return common.DATABASEERROR
 	}
+
+	// delete cache in redis
+	go func() {
+		_, err = repository.GetRedisDB().Del(common.USERDETAILPREFIX + utils.ParseUint642String(user.ID)).Result()
+		if err != nil {
+			//
+		}
+	}()
 	return nil
 }
 
@@ -117,6 +158,14 @@ func (ins *UserDal) UpdateUserLoginInfo(c *gin.Context, userID uint64, ip string
 	if err != nil {
 		return common.DATABASEERROR
 	}
+
+	// delete cache in redis
+	go func() {
+		_, err = repository.GetRedisDB().Del(common.USERDETAILPREFIX + utils.ParseUint642String(user.ID)).Result()
+		if err != nil {
+			//
+		}
+	}()
 	return nil
 }
 
