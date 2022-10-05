@@ -1,5 +1,5 @@
-# GIN_LUTA
-个人对GIN框架的规范化模板框架，基于公司内部对gin的业务封装  
+# chat
+聊天程序后台代码  the backend code of my chat program
 ## 整体架构  
 ```
 --biz 业务逻辑都存放在这  
